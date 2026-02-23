@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card List - CMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1em;
+        }
+        
+        .actions {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-edit {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            font-size: 12px;
+        }
+        
+        .btn-edit:hover {
+            background: #218838;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background-color 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        td {
+            padding: 15px;
+            color: #333;
+        }
+        
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        
+        .status-iact {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-cact {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-dact {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 1.1em;
+        }
+        
+        .card-count {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Card Management System</h1>
+        <p class="subtitle">View and manage all credit cards</p>
+        
+        <div class="actions">
+            <a href="/cards/add" class="btn btn-primary">Add New Card</a>
+            <a href="/api/cards" class="btn btn-secondary" target="_blank">View JSON API</a>
+        </div>
+        
+        <div class="card-count" th:if="${cards != null && !cards.isEmpty()}">
+            Total Cards: <span th:text="${cards.size()}">0</span>
+        </div>
+        
+        <div th:if="${cards == null || cards.isEmpty()}" class="no-data">
+            <p>No cards found in the system.</p>
+            <p>Click "Add New Card" to create your first card.</p>
+        </div>
+        
+        <table th:if="${cards != null && !cards.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Card Number</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th>Credit Limit</th>
+                    <th>Available Credit</th>
+                    <th>Cash Limit</th>
+                    <th>Available Cash</th>
+                    <th>Last Updated</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="card : ${cards}">
+                    <td th:text="${card.cardNumber}">1234567890123456</td>
+                    <td th:text="${#temporals.format(card.expiryDate, 'dd-MMM-yyyy')}">31-Dec-2027</td>
+                    <td>
+                        <span th:class="'status status-' + ${#strings.toLowerCase(card.cardStatus)}"
+                              th:text="${card.cardStatus}">IACT</span>
+                    </td>
+                    <td th:text="${#numbers.formatDecimal(card.creditLimit, 0, 'COMMA', 2, 'POINT')}">100,000.00</td>
+                    <td th:text="${#numbers.formatDecimal(card.availableCreditLimit, 0, 'COMMA', 2, 'POINT')}">75,000.00</td>
+                    <td th:text="${#numbers.formatDecimal(card.cashLimit, 0, 'COMMA', 2, 'POINT')}">50,000.00</td>
+                    <td th:text="${#numbers.formatDecimal(card.availableCashLimit, 0, 'COMMA', 2, 'POINT')}">40,000.00</td>
+                    <td th:text="${#temporals.format(card.lastUpdateTime, 'dd-MMM-yyyy HH:mm')}">19-Feb-2026 15:30</td>
+                    <td>
+                        <a th:href="@{/cards/edit/{cardNumber}(cardNumber=${card.cardNumber})}" 
+                           class="btn btn-edit">Edit</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

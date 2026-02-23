@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Card - CMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .card-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .card-info p {
+            margin: 5px 0;
+            color: #555;
+        }
+        
+        .card-info strong {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        input.error-input {
+            border-color: #e74c3c;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .cancel-btn {
+            background: #6c757d;
+        }
+        
+        .cancel-btn:hover {
+            background: #5a6268;
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
+        }
+        
+        .readonly-info {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Card Details</h1>
+        <p class="readonly-info">Only Credit Limit, Cash Limit, and Expiry Date can be edited</p>
+        
+        <div class="card-info">
+            <p><strong>Card Number:</strong> <span th:text="${card.cardNumber}"></span></p>
+            <p><strong>Card Status:</strong> <span th:text="${card.cardStatus}"></span></p>
+            <p><strong>Available Credit Limit:</strong> <span th:text="${card.availableCreditLimit}"></span></p>
+            <p><strong>Available Cash Limit:</strong> <span th:text="${card.availableCashLimit}"></span></p>
+        </div>
+        
+        <div th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"></div>
+        
+        <form th:action="@{/cards/edit/{id}(id=${card.id})}" th:object="${updateRequest}" method="post">
+            
+            <div class="form-group">
+                <label for="expiryDate">Expiry Date *</label>
+                <input type="date" 
+                       id="expiryDate" 
+                       th:field="*{expiryDate}"
+                       th:classappend="${#fields.hasErrors('expiryDate')} ? 'error-input' : ''"
+                       required>
+                <span class="error" th:if="${#fields.hasErrors('expiryDate')}" th:errors="*{expiryDate}"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="creditLimit">Credit Limit *</label>
+                <input type="number" 
+                       id="creditLimit" 
+                       th:field="*{creditLimit}"
+                       th:classappend="${#fields.hasErrors('creditLimit')} ? 'error-input' : ''"
+                       step="0.01"
+                       min="0.01"
+                       placeholder="e.g., 50000.00"
+                       required>
+                <span class="error" th:if="${#fields.hasErrors('creditLimit')}" th:errors="*{creditLimit}"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="cashLimit">Cash Limit *</label>
+                <input type="number" 
+                       id="cashLimit" 
+                       th:field="*{cashLimit}"
+                       th:classappend="${#fields.hasErrors('cashLimit')} ? 'error-input' : ''"
+                       step="0.01"
+                       min="0.01"
+                       placeholder="e.g., 10000.00"
+                       required>
+                <span class="error" th:if="${#fields.hasErrors('cashLimit')}" th:errors="*{cashLimit}"></span>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit">Update Card</button>
+                <a th:href="@{/cards/add}" style="flex: 1; text-decoration: none;">
+                    <button type="button" class="cancel-btn" style="width: 100%;">Cancel</button>
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
