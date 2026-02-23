@@ -19,10 +19,8 @@ function ApproveRejectPage() {
     setError(null)
     try {
       const response = await cardRequestsApi.getAllRequestsWithDetails()
-      console.log('Requests response:', response.data)
       setRequests(response.data)
     } catch (err) {
-      console.error('Failed to fetch requests:', err)
       const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch requests'
       setError(errorMessage)
     } finally {
@@ -35,7 +33,7 @@ function ApproveRejectPage() {
       setError(null)
       setSuccess(null)
       await cardRequestsApi.approveRequest(requestId, remark || null)
-      setSuccess(`Request #${requestId} approved successfully!`)
+      setSuccess(`Request #${requestId} approved successfully.`)
       setRemarkModal({ show: false, requestId: null, action: null })
       setRemark('')
       fetchRequests()
@@ -51,7 +49,7 @@ function ApproveRejectPage() {
       setError(null)
       setSuccess(null)
       await cardRequestsApi.rejectRequest(requestId, remark || null)
-      setSuccess(`Request #${requestId} rejected successfully!`)
+      setSuccess(`Request #${requestId} rejected.`)
       setRemarkModal({ show: false, requestId: null, action: null })
       setRemark('')
       fetchRequests()
@@ -82,63 +80,47 @@ function ApproveRejectPage() {
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case 'PEND':
-        return 'status-badge status-pending'
-      case 'APPR':
-        return 'status-badge status-approved'
-      case 'RJCT':
-        return 'status-badge status-rejected'
-      default:
-        return 'status-badge'
+      case 'PEND': return 'status-badge status-pending'
+      case 'APPR': return 'status-badge status-approved'
+      case 'RJCT': return 'status-badge status-rejected'
+      default: return 'status-badge'
     }
   }
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'PEND':
-        return 'Pending'
-      case 'APPR':
-        return 'Approved'
-      case 'RJCT':
-        return 'Rejected'
-      default:
-        return status
+      case 'PEND': return 'Pending'
+      case 'APPR': return 'Approved'
+      case 'RJCT': return 'Rejected'
+      default: return status
     }
   }
 
   const getCardStatusText = (status) => {
     switch (status) {
-      case 'CACT':
-        return 'Active'
-      case 'IACT':
-        return 'Inactive'
-      case 'DACT':
-        return 'Deactivated'
-      default:
-        return status
+      case 'CACT': return 'Active'
+      case 'IACT': return 'Inactive'
+      case 'DACT': return 'Deactivated'
+      default: return status
     }
   }
 
   const getRequestTypeText = (type) => {
     switch (type) {
-      case 'ACTI':
-        return 'Activation'
-      case 'CDCL':
-        return 'Deactivation'
-      default:
-        return type
+      case 'ACTI': return 'Activation'
+      case 'CDCL': return 'Deactivation'
+      default: return type
     }
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-US', {
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     })
-  }
 
   const filteredRequests = requests.filter((request) => {
     if (filterStatus === 'all') return true
@@ -148,8 +130,8 @@ function ApproveRejectPage() {
   return (
     <div>
       <div className="card">
-        <h2>🔍 Approve / Reject Requests</h2>
-        <p className="subtitle">Review and process pending card requests</p>
+        <h2>Approve / Reject Requests</h2>
+        <p className="subtitle">Review and process pending card requests.</p>
 
         {error && (
           <div className="alert alert-error">
@@ -159,11 +141,10 @@ function ApproveRejectPage() {
 
         {success && (
           <div className="alert alert-success">
-            <strong>Success:</strong> {success}
+            {success}
           </div>
         )}
 
-        {/* Filter Section */}
         <div className="filter-section">
           <label htmlFor="statusFilter">Filter by Status:</label>
           <select
@@ -173,16 +154,15 @@ function ApproveRejectPage() {
             className="form-select"
           >
             <option value="all">All Requests</option>
-            <option value="PEND">Pending Only</option>
-            <option value="APPR">Approved Only</option>
-            <option value="RJCT">Rejected Only</option>
+            <option value="PEND">Pending</option>
+            <option value="APPR">Approved</option>
+            <option value="RJCT">Rejected</option>
           </select>
         </div>
       </div>
 
-      {/* Requests List */}
       <div className="card">
-        <h3>📋 Requests List ({filteredRequests.length})</h3>
+        <h3>Requests ({filteredRequests.length})</h3>
 
         {loading ? (
           <div className="loading">Loading requests...</div>
@@ -201,7 +181,7 @@ function ApproveRejectPage() {
                   <th>Status</th>
                   <th>Card Status</th>
                   <th>Remark</th>
-                  <th>Created Time</th>
+                  <th>Created</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -213,7 +193,12 @@ function ApproveRejectPage() {
                       <code>{request.maskedCardNumber}</code>
                     </td>
                     <td>
-                      <span className={`request-type-badge ${request.requestReasonCode === 'ACTI' ? 'type-activation' : 'type-deactivation'}`}>
+                      <span
+                        className={`request-type-badge ${request.requestReasonCode === 'ACTI'
+                            ? 'type-activation'
+                            : 'type-deactivation'
+                          }`}
+                      >
                         {getRequestTypeText(request.requestReasonCode)}
                       </span>
                     </td>
@@ -223,14 +208,19 @@ function ApproveRejectPage() {
                       </span>
                     </td>
                     <td>
-                      <span className={`card-status-badge ${request.cardStatus === 'CACT' ? 'card-active' : request.cardStatus === 'IACT' ? 'card-inactive' : 'card-deactivated'}`}>
+                      <span
+                        className={`card-status-badge ${request.cardStatus === 'CACT'
+                            ? 'card-active'
+                            : request.cardStatus === 'IACT'
+                              ? 'card-inactive'
+                              : 'card-deactivated'
+                          }`}
+                      >
                         {getCardStatusText(request.cardStatus)}
                       </span>
                     </td>
                     <td>
-                      <span className="remark-text">
-                        {request.remark || '-'}
-                      </span>
+                      <span className="remark-text">{request.remark || '—'}</span>
                     </td>
                     <td>{formatDate(request.createdTime)}</td>
                     <td>
@@ -241,19 +231,19 @@ function ApproveRejectPage() {
                             className="btn btn-approve"
                             title="Approve this request"
                           >
-                            ✓ Approve
+                            Approve
                           </button>
                           <button
                             onClick={() => openRemarkModal(request.requestId, 'reject')}
                             className="btn btn-reject"
                             title="Reject this request"
                           >
-                            ✗ Reject
+                            Reject
                           </button>
                         </div>
                       ) : (
                         <span className="processed-text">
-                          {request.requestStatusCode === 'APPR' ? 'Already Approved' : 'Already Rejected'}
+                          {request.requestStatusCode === 'APPR' ? 'Approved' : 'Rejected'}
                         </span>
                       )}
                     </td>
@@ -265,23 +255,23 @@ function ApproveRejectPage() {
         )}
       </div>
 
-      {/* Remark Modal */}
       {remarkModal.show && (
         <div className="modal-overlay" onClick={closeRemarkModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>
-                {remarkModal.action === 'approve' ? '✓ Approve Request' : '✗ Reject Request'}
+                {remarkModal.action === 'approve' ? 'Approve Request' : 'Reject Request'}
               </h3>
-              <button onClick={closeRemarkModal} className="modal-close">
-                ✕
+              <button onClick={closeRemarkModal} className="modal-close" aria-label="Close">
+                &times;
               </button>
             </div>
             <div className="modal-body">
               <p>
-                You are about to <strong>{remarkModal.action}</strong> Request <strong>#{remarkModal.requestId}</strong>.
+                You are about to <strong>{remarkModal.action}</strong> Request{' '}
+                <strong>#{remarkModal.requestId}</strong>.
               </p>
-              <label htmlFor="remarkInput">Add a remark (optional):</label>
+              <label htmlFor="remarkInput">Remark (optional)</label>
               <textarea
                 id="remarkInput"
                 value={remark}

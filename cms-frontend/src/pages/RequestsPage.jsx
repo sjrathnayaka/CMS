@@ -19,10 +19,8 @@ function RequestsPage() {
   const fetchCards = async () => {
     try {
       const response = await cardsApi.getAllCards()
-      console.log('Cards response:', response.data)
       setCards(response.data)
     } catch (err) {
-      console.error('Failed to fetch cards:', err)
       const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch cards'
       setError(errorMessage)
     }
@@ -33,10 +31,8 @@ function RequestsPage() {
     setError(null)
     try {
       const response = await cardRequestsApi.getAllRequestsWithDetails()
-      console.log('Requests response:', response.data)
       setRequests(response.data)
     } catch (err) {
-      console.error('Failed to fetch requests:', err)
       const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch requests'
       setError(errorMessage)
     } finally {
@@ -50,7 +46,7 @@ function RequestsPage() {
     setSuccess(null)
 
     if (!selectedCard) {
-      setError('Please select a card')
+      setError('Please select a card.')
       return
     }
 
@@ -62,17 +58,17 @@ function RequestsPage() {
 
       if (requestType === 'activate') {
         await cardRequestsApi.requestActivation(requestData)
-        setSuccess('Activation request submitted successfully!')
+        setSuccess('Activation request submitted successfully.')
       } else {
         await cardRequestsApi.requestDeactivation(requestData)
-        setSuccess('Deactivation request submitted successfully!')
+        setSuccess('Deactivation request submitted successfully.')
       }
 
       setSelectedCard('')
       setRemark('')
       fetchRequests()
       fetchCards()
-      
+
       setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to submit request'
@@ -82,63 +78,47 @@ function RequestsPage() {
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case 'PEND':
-        return 'status-badge status-pending'
-      case 'APPR':
-        return 'status-badge status-approved'
-      case 'RJCT':
-        return 'status-badge status-rejected'
-      default:
-        return 'status-badge'
+      case 'PEND': return 'status-badge status-pending'
+      case 'APPR': return 'status-badge status-approved'
+      case 'RJCT': return 'status-badge status-rejected'
+      default: return 'status-badge'
     }
   }
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'PEND':
-        return 'Pending'
-      case 'APPR':
-        return 'Approved'
-      case 'RJCT':
-        return 'Rejected'
-      default:
-        return status
+      case 'PEND': return 'Pending'
+      case 'APPR': return 'Approved'
+      case 'RJCT': return 'Rejected'
+      default: return status
     }
   }
 
   const getCardStatusText = (status) => {
     switch (status) {
-      case 'CACT':
-        return 'Active'
-      case 'IACT':
-        return 'Inactive'
-      case 'DACT':
-        return 'Deactivated'
-      default:
-        return status
+      case 'CACT': return 'Active'
+      case 'IACT': return 'Inactive'
+      case 'DACT': return 'Deactivated'
+      default: return status
     }
   }
 
   const getRequestTypeText = (type) => {
     switch (type) {
-      case 'ACTI':
-        return 'Activation'
-      case 'CDCL':
-        return 'Deactivation'
-      default:
-        return type
+      case 'ACTI': return 'Activation'
+      case 'CDCL': return 'Deactivation'
+      default: return type
     }
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-US', {
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     })
-  }
 
   const maskCardNumber = (cardNumber) => {
     if (!cardNumber || cardNumber.length < 4) return cardNumber
@@ -148,11 +128,11 @@ function RequestsPage() {
   return (
     <div>
       <div className="card">
-        <h2>📝 Submit Card Request</h2>
-        
+        <h2>Submit Card Request</h2>
+
         {success && <div className="alert alert-success">{success}</div>}
         {error && <div className="alert alert-error">{error}</div>}
-        
+
         <form onSubmit={handleSubmitRequest}>
           <div className="form-group">
             <label htmlFor="requestType">Request Type *</label>
@@ -173,10 +153,10 @@ function RequestsPage() {
               value={selectedCard}
               onChange={(e) => setSelectedCard(e.target.value)}
             >
-              <option value="">-- Select a card --</option>
+              <option value="">Select a card</option>
               {cards.map((card) => (
                 <option key={card.encryptedCardNumber} value={card.encryptedCardNumber}>
-                  {card.maskedCardNumber || maskCardNumber(card.cardNumber)} - {getCardStatusText(card.cardStatus)}
+                  {card.maskedCardNumber || maskCardNumber(card.cardNumber)} — {getCardStatusText(card.cardStatus)}
                 </option>
               ))}
             </select>
@@ -194,19 +174,19 @@ function RequestsPage() {
           </div>
 
           <button type="submit" className="btn btn-primary">
-            📤 Submit Request
+            Submit Request
           </button>
         </form>
       </div>
 
       <div className="card">
-        <h2>📊 All Card Requests</h2>
-        
+        <h2>All Card Requests</h2>
+
         {loading ? (
           <div className="loading">Loading requests...</div>
         ) : requests.length === 0 ? (
           <div className="empty-state">
-            <p>No requests found. Submit your first request above!</p>
+            <p>No requests found. Submit your first request above.</p>
           </div>
         ) : (
           <div className="table-container">
@@ -226,7 +206,9 @@ function RequestsPage() {
                 {requests.map((request) => (
                   <tr key={request.requestId}>
                     <td>#{request.requestId}</td>
-                    <td>{request.maskedCardNumber || maskCardNumber(request.cardNumber)}</td>
+                    <td>
+                      <code>{request.maskedCardNumber || maskCardNumber(request.cardNumber)}</code>
+                    </td>
                     <td>{getRequestTypeText(request.requestReasonCode)}</td>
                     <td>{request.cardStatusDescription || getCardStatusText(request.cardStatus)}</td>
                     <td>
@@ -234,7 +216,7 @@ function RequestsPage() {
                         {getStatusText(request.requestStatusCode)}
                       </span>
                     </td>
-                    <td>{request.remark || '-'}</td>
+                    <td>{request.remark || '—'}</td>
                     <td>{formatDate(request.createdTime)}</td>
                   </tr>
                 ))}

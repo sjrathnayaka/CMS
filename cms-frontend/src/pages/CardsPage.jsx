@@ -33,8 +33,18 @@ function CardsPage() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
+
+    // Card number: only allow digits, max 16
+    if (name === 'cardNumber') {
+      const digits = value.replace(/\D/g, '').slice(0, 16)
+      setFormData({ ...formData, [name]: digits })
+      if (formErrors.cardNumber) {
+        setFormErrors({ ...formErrors, cardNumber: null })
+      }
+      return
+    }
+
     setFormData({ ...formData, [name]: value })
-    // Clear error for this field
     if (formErrors[name]) {
       setFormErrors({ ...formErrors, [name]: null })
     }
@@ -42,11 +52,11 @@ function CardsPage() {
 
   const validateForm = () => {
     const errors = {}
-    
-    if (!formData.cardNumber || !/^\d{13,16}$/.test(formData.cardNumber)) {
-      errors.cardNumber = 'Card number must be 13-16 digits'
+
+    if (!formData.cardNumber || !/^\d{16}$/.test(formData.cardNumber)) {
+      errors.cardNumber = 'Card number must be exactly 16 digits'
     }
-    
+
     if (!formData.expiryDate) {
       errors.expiryDate = 'Expiry date is required'
     } else {
@@ -55,15 +65,15 @@ function CardsPage() {
         errors.expiryDate = 'Expiry date must be in the future'
       }
     }
-    
+
     if (!formData.creditLimit || parseFloat(formData.creditLimit) <= 0) {
       errors.creditLimit = 'Credit limit must be greater than 0'
     }
-    
+
     if (!formData.cashLimit || parseFloat(formData.cashLimit) <= 0) {
       errors.cashLimit = 'Cash limit must be greater than 0'
     }
-    
+
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -72,7 +82,7 @@ function CardsPage() {
     e.preventDefault()
     setError(null)
     setSuccess(null)
-    
+
     if (!validateForm()) {
       return
     }
@@ -84,9 +94,9 @@ function CardsPage() {
         creditLimit: parseFloat(formData.creditLimit),
         cashLimit: parseFloat(formData.cashLimit),
       }
-      
+
       await cardsApi.createCard(cardData)
-      setSuccess('Card added successfully!')
+      setSuccess('Card added successfully.')
       setFormData({
         cardNumber: '',
         expiryDate: '',
@@ -94,57 +104,44 @@ function CardsPage() {
         cashLimit: '',
       })
       fetchCards()
-      
-      // Clear success message after 3 seconds
+
       setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.errors?.cardNumber ||
-                          'Failed to add card'
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.errors?.cardNumber ||
+        'Failed to add card'
       setError(errorMessage)
     }
   }
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case 'CACT':
-        return 'status-badge status-active'
-      case 'IACT':
-        return 'status-badge status-inactive'
-      case 'DACT':
-        return 'status-badge status-deactivated'
-      default:
-        return 'status-badge'
+      case 'CACT': return 'status-badge status-active'
+      case 'IACT': return 'status-badge status-inactive'
+      case 'DACT': return 'status-badge status-deactivated'
+      default: return 'status-badge'
     }
   }
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'CACT':
-        return 'Active'
-      case 'IACT':
-        return 'Inactive'
-      case 'DACT':
-        return 'Deactivated'
-      default:
-        return status
+      case 'CACT': return 'Active'
+      case 'IACT': return 'Inactive'
+      case 'DACT': return 'Deactivated'
+      default: return status
     }
   }
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
-  }
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     })
-  }
 
   const maskCardNumber = (cardNumber) => {
     if (!cardNumber || cardNumber.length < 4) return cardNumber
@@ -154,12 +151,12 @@ function CardsPage() {
   return (
     <div>
       <div className="card">
-        <h2>➕ Add New Card</h2>
-        
+        <h2>Add New Card</h2>
+
         {success && <div className="alert alert-success">{success}</div>}
         {error && <div className="alert alert-error">{error}</div>}
-        
-        <form onSubmit={handleSubmit}>
+
+        <form onSubmit={handleSubmit} noValidate>
           <div className="grid-2">
             <div className="form-group">
               <label htmlFor="cardNumber">Card Number *</label>
@@ -169,9 +166,15 @@ function CardsPage() {
                 name="cardNumber"
                 value={formData.cardNumber}
                 onChange={handleInputChange}
-                placeholder="Enter 13-16 digit card number"
+                placeholder="Enter 16-digit card number"
                 maxLength="16"
+                inputMode="numeric"
+                autoComplete="cc-number"
+                className={formErrors.cardNumber ? 'input-error' : ''}
               />
+              <div className={`char-count${formData.cardNumber.length === 16 ? ' at-limit' : ''}`}>
+                {formData.cardNumber.length} / 16 digits
+              </div>
               {formErrors.cardNumber && (
                 <div className="error">{formErrors.cardNumber}</div>
               )}
@@ -185,6 +188,7 @@ function CardsPage() {
                 name="expiryDate"
                 value={formData.expiryDate}
                 onChange={handleInputChange}
+                className={formErrors.expiryDate ? 'input-error' : ''}
               />
               {formErrors.expiryDate && (
                 <div className="error">{formErrors.expiryDate}</div>
@@ -199,9 +203,10 @@ function CardsPage() {
                 name="creditLimit"
                 value={formData.creditLimit}
                 onChange={handleInputChange}
-                placeholder="Enter credit limit"
+                placeholder="e.g. 50000.00"
                 step="0.01"
                 min="0"
+                className={formErrors.creditLimit ? 'input-error' : ''}
               />
               {formErrors.creditLimit && (
                 <div className="error">{formErrors.creditLimit}</div>
@@ -216,9 +221,10 @@ function CardsPage() {
                 name="cashLimit"
                 value={formData.cashLimit}
                 onChange={handleInputChange}
-                placeholder="Enter cash limit"
+                placeholder="e.g. 10000.00"
                 step="0.01"
                 min="0"
+                className={formErrors.cashLimit ? 'input-error' : ''}
               />
               {formErrors.cashLimit && (
                 <div className="error">{formErrors.cashLimit}</div>
@@ -227,19 +233,19 @@ function CardsPage() {
           </div>
 
           <button type="submit" className="btn btn-primary">
-            ➕ Add Card
+            Add Card
           </button>
         </form>
       </div>
 
       <div className="card">
-        <h2>📋 All Cards</h2>
-        
+        <h2>All Cards</h2>
+
         {loading ? (
           <div className="loading">Loading cards...</div>
         ) : cards.length === 0 ? (
           <div className="empty-state">
-            <p>No cards found. Add your first card above!</p>
+            <p>No cards found. Add your first card above.</p>
           </div>
         ) : (
           <div className="table-container">
@@ -259,7 +265,9 @@ function CardsPage() {
               <tbody>
                 {cards.map((card) => (
                   <tr key={card.encryptedCardNumber}>
-                    <td>{card.maskedCardNumber || maskCardNumber(card.cardNumber)}</td>
+                    <td>
+                      <code>{card.maskedCardNumber || maskCardNumber(card.cardNumber)}</code>
+                    </td>
                     <td>{formatDate(card.expiryDate)}</td>
                     <td>
                       <span className={getStatusBadgeClass(card.cardStatus)}>

@@ -6,25 +6,27 @@ import ApproveRejectPage from './pages/ApproveRejectPage'
 
 function Navigation() {
   const location = useLocation()
-  
+
   return (
     <nav className="navbar">
-      <div className="container">
-        <h1>💳 Card Management System</h1>
+      <div className="navbar-inner">
+        <div className="navbar-brand">
+          Card <span>Management</span> System
+        </div>
         <ul className="nav-links">
           <li>
             <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
-              Cards Management
+              Cards
             </Link>
           </li>
           <li>
             <Link to="/requests" className={location.pathname === '/requests' ? 'active' : ''}>
-              Request Management
+              Requests
             </Link>
           </li>
           <li>
             <Link to="/approvals" className={location.pathname === '/approvals' ? 'active' : ''}>
-              Approval Management
+              Approvals
             </Link>
           </li>
         </ul>
