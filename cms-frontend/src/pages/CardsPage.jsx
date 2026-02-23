@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { cardsApi } from '../api/api'
+import { fetchPublicKey, encryptField } from '../utils/encryption'
 
 function CardsPage() {
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     cardNumber: '',
     expiryDate: '',
@@ -13,9 +15,13 @@ function CardsPage() {
     cashLimit: '',
   })
   const [formErrors, setFormErrors] = useState({})
+  const publicKeyRef = useRef(null)
 
   useEffect(() => {
     fetchCards()
+    fetchPublicKey()
+      .then((key) => { publicKeyRef.current = key })
+      .catch((err) => { console.error('Could not fetch RSA public key:', err) })
   }, [])
 
   const fetchCards = async () => {
@@ -33,47 +39,29 @@ function CardsPage() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
-
-    // Card number: only allow digits, max 16
     if (name === 'cardNumber') {
       const digits = value.replace(/\D/g, '').slice(0, 16)
       setFormData({ ...formData, [name]: digits })
-      if (formErrors.cardNumber) {
-        setFormErrors({ ...formErrors, cardNumber: null })
-      }
+      if (formErrors.cardNumber) setFormErrors({ ...formErrors, cardNumber: null })
       return
     }
-
     setFormData({ ...formData, [name]: value })
-    if (formErrors[name]) {
-      setFormErrors({ ...formErrors, [name]: null })
-    }
+    if (formErrors[name]) setFormErrors({ ...formErrors, [name]: null })
   }
 
   const validateForm = () => {
     const errors = {}
-
-    if (!formData.cardNumber || !/^\d{16}$/.test(formData.cardNumber)) {
+    if (!formData.cardNumber || !/^\d{16}$/.test(formData.cardNumber))
       errors.cardNumber = 'Card number must be exactly 16 digits'
-    }
-
     if (!formData.expiryDate) {
       errors.expiryDate = 'Expiry date is required'
-    } else {
-      const expiry = new Date(formData.expiryDate)
-      if (expiry <= new Date()) {
-        errors.expiryDate = 'Expiry date must be in the future'
-      }
+    } else if (new Date(formData.expiryDate) <= new Date()) {
+      errors.expiryDate = 'Expiry date must be in the future'
     }
-
-    if (!formData.creditLimit || parseFloat(formData.creditLimit) <= 0) {
+    if (!formData.creditLimit || parseFloat(formData.creditLimit) <= 0)
       errors.creditLimit = 'Credit limit must be greater than 0'
-    }
-
-    if (!formData.cashLimit || parseFloat(formData.cashLimit) <= 0) {
+    if (!formData.cashLimit || parseFloat(formData.cashLimit) <= 0)
       errors.cashLimit = 'Cash limit must be greater than 0'
-    }
-
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -82,36 +70,31 @@ function CardsPage() {
     e.preventDefault()
     setError(null)
     setSuccess(null)
-
-    if (!validateForm()) {
-      return
-    }
-
+    if (!validateForm()) return
+    setSubmitting(true)
     try {
-      const cardData = {
-        cardNumber: formData.cardNumber,
-        expiryDate: formData.expiryDate,
-        creditLimit: parseFloat(formData.creditLimit),
-        cashLimit: parseFloat(formData.cashLimit),
+      const publicKey = publicKeyRef.current || (await fetchPublicKey())
+      publicKeyRef.current = publicKey
+      const encryptedPayload = {
+        cardNumber: encryptField(publicKey, formData.cardNumber),
+        expiryDate: encryptField(publicKey, formData.expiryDate),
+        creditLimit: encryptField(publicKey, formData.creditLimit),
+        cashLimit: encryptField(publicKey, formData.cashLimit),
       }
-
-      await cardsApi.createCard(cardData)
+      await cardsApi.createCardEncrypted(encryptedPayload)
       setSuccess('Card added successfully.')
-      setFormData({
-        cardNumber: '',
-        expiryDate: '',
-        creditLimit: '',
-        cashLimit: '',
-      })
+      setFormData({ cardNumber: '', expiryDate: '', creditLimit: '', cashLimit: '' })
       fetchCards()
-
       setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
-      const errorMessage =
+      setError(
         err.response?.data?.message ||
         err.response?.data?.errors?.cardNumber ||
+        err.message ||
         'Failed to add card'
-      setError(errorMessage)
+      )
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -137,11 +120,7 @@ function CardsPage() {
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 
   const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
+    new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 
   const maskCardNumber = (cardNumber) => {
     if (!cardNumber || cardNumber.length < 4) return cardNumber
@@ -152,7 +131,6 @@ function CardsPage() {
     <div>
       <div className="card">
         <h2>Add New Card</h2>
-
         {success && <div className="alert alert-success">{success}</div>}
         {error && <div className="alert alert-error">{error}</div>}
 
@@ -161,92 +139,63 @@ function CardsPage() {
             <div className="form-group">
               <label htmlFor="cardNumber">Card Number *</label>
               <input
-                type="text"
-                id="cardNumber"
-                name="cardNumber"
-                value={formData.cardNumber}
-                onChange={handleInputChange}
-                placeholder="Enter 16-digit card number"
-                maxLength="16"
-                inputMode="numeric"
-                autoComplete="cc-number"
+                type="text" id="cardNumber" name="cardNumber"
+                value={formData.cardNumber} onChange={handleInputChange}
+                placeholder="Enter 16-digit card number" maxLength="16"
+                inputMode="numeric" autoComplete="cc-number"
                 className={formErrors.cardNumber ? 'input-error' : ''}
               />
               <div className={`char-count${formData.cardNumber.length === 16 ? ' at-limit' : ''}`}>
                 {formData.cardNumber.length} / 16 digits
               </div>
-              {formErrors.cardNumber && (
-                <div className="error">{formErrors.cardNumber}</div>
-              )}
+              {formErrors.cardNumber && <div className="error">{formErrors.cardNumber}</div>}
             </div>
 
             <div className="form-group">
               <label htmlFor="expiryDate">Expiry Date *</label>
               <input
-                type="date"
-                id="expiryDate"
-                name="expiryDate"
-                value={formData.expiryDate}
-                onChange={handleInputChange}
+                type="date" id="expiryDate" name="expiryDate"
+                value={formData.expiryDate} onChange={handleInputChange}
                 className={formErrors.expiryDate ? 'input-error' : ''}
               />
-              {formErrors.expiryDate && (
-                <div className="error">{formErrors.expiryDate}</div>
-              )}
+              {formErrors.expiryDate && <div className="error">{formErrors.expiryDate}</div>}
             </div>
 
             <div className="form-group">
               <label htmlFor="creditLimit">Credit Limit *</label>
               <input
-                type="number"
-                id="creditLimit"
-                name="creditLimit"
-                value={formData.creditLimit}
-                onChange={handleInputChange}
-                placeholder="e.g. 50000.00"
-                step="0.01"
-                min="0"
+                type="number" id="creditLimit" name="creditLimit"
+                value={formData.creditLimit} onChange={handleInputChange}
+                placeholder="e.g. 50000.00" step="0.01" min="0"
                 className={formErrors.creditLimit ? 'input-error' : ''}
               />
-              {formErrors.creditLimit && (
-                <div className="error">{formErrors.creditLimit}</div>
-              )}
+              {formErrors.creditLimit && <div className="error">{formErrors.creditLimit}</div>}
             </div>
 
             <div className="form-group">
               <label htmlFor="cashLimit">Cash Limit *</label>
               <input
-                type="number"
-                id="cashLimit"
-                name="cashLimit"
-                value={formData.cashLimit}
-                onChange={handleInputChange}
-                placeholder="e.g. 10000.00"
-                step="0.01"
-                min="0"
+                type="number" id="cashLimit" name="cashLimit"
+                value={formData.cashLimit} onChange={handleInputChange}
+                placeholder="e.g. 10000.00" step="0.01" min="0"
                 className={formErrors.cashLimit ? 'input-error' : ''}
               />
-              {formErrors.cashLimit && (
-                <div className="error">{formErrors.cashLimit}</div>
-              )}
+              {formErrors.cashLimit && <div className="error">{formErrors.cashLimit}</div>}
             </div>
           </div>
 
-          <button type="submit" className="btn btn-primary">
-            Add Card
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {submitting ? 'Encrypting & Saving...' : 'Add Card'}
           </button>
         </form>
       </div>
 
       <div className="card">
         <h2>All Cards</h2>
-
         {loading ? (
           <div className="loading">Loading cards...</div>
         ) : cards.length === 0 ? (
-          <div className="empty-state">
-            <p>No cards found. Add your first card above.</p>
-          </div>
+          <div className="empty-state"><p>No cards found. Add your first card above.</p></div>
         ) : (
           <div className="table-container">
             <table>
@@ -260,14 +209,13 @@ function CardsPage() {
                   <th>Available Credit</th>
                   <th>Available Cash</th>
                   <th>Last Updated</th>
+                  <th>Updated By</th>
                 </tr>
               </thead>
               <tbody>
                 {cards.map((card) => (
                   <tr key={card.encryptedCardNumber}>
-                    <td>
-                      <code>{card.maskedCardNumber || maskCardNumber(card.cardNumber)}</code>
-                    </td>
+                    <td><code>{card.maskedCardNumber || maskCardNumber(card.cardNumber)}</code></td>
                     <td>{formatDate(card.expiryDate)}</td>
                     <td>
                       <span className={getStatusBadgeClass(card.cardStatus)}>
@@ -279,6 +227,7 @@ function CardsPage() {
                     <td>{formatCurrency(card.availableCreditLimit)}</td>
                     <td>{formatCurrency(card.availableCashLimit)}</td>
                     <td>{formatDate(card.lastUpdateTime)}</td>
+                    <td>{card.lastUpdatedUser || '—'}</td>
                   </tr>
                 ))}
               </tbody>

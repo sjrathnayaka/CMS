@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DetailedCardRequestResponse {
-    
+
     // Request Details
     private Long requestId;
     private String requestReasonCode;
@@ -25,7 +25,9 @@ public class DetailedCardRequestResponse {
     private String requestStatusDescription;
     private String remark;
     private LocalDateTime createdTime;
-    
+    private String approvedUser;
+    private String requestedUser;
+
     // Card Details
     private String encryptedCardNumber;
     private String maskedCardNumber;
@@ -39,4 +41,5 @@ public class DetailedCardRequestResponse {
     private BigDecimal outstandingCreditBalance;
     private BigDecimal outstandingCashBalance;
     private LocalDateTime lastUpdateTime;
+    private String lastUpdatedUser;
 }

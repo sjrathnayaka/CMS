@@ -14,16 +14,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardRequest {
-    
-    private Long requestId;  // Auto-generated primary key
-    
-    private String cardNumber;  // Encrypted card number (foreign key to Card table)
-    
-    private String requestReasonCode;  // ACTI or CDCL
-    
-    private String requestStatusCode;  // PEND, APPR, RJCT
-    
-    private String remark;  // Optional remark/reason
-    
-    private LocalDateTime createdTime;  // Auto-set timestamp
+
+    private Long requestId; // Auto-generated primary key
+
+    private String cardNumber; // Encrypted card number (foreign key to Card table)
+
+    private String requestReasonCode; // ACTI or CDCL
+
+    private String requestStatusCode; // PEND, APPR, RJCT
+
+    private String remark; // Optional remark/reason
+
+    private LocalDateTime createdTime; // Auto-set timestamp
+
+    private String approvedUser; // FK → Users(Username), set on approval/rejection
+
+    private String requestedUser; // FK → Users(Username), set on request creation
 }

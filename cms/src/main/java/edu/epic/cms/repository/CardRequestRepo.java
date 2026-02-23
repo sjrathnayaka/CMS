@@ -9,29 +9,29 @@ import java.util.Optional;
  * Repository interface for CardRequest entity.
  */
 public interface CardRequestRepo {
-    
+
     /**
      * Save a new card request.
      */
     CardRequest save(CardRequest request);
-    
+
     /**
      * Find a card request by ID.
      */
     Optional<CardRequest> findById(Long requestId);
-    
+
     /**
      * Find all card requests for a specific card.
      */
     List<CardRequest> findByCardNumber(String cardNumber);
-    
+
     /**
      * Find all card requests.
      */
     List<CardRequest> findAll();
-    
+
     /**
-     * Update request status.
+     * Update request status and optionally set the approving/rejecting user.
      */
-    int updateStatus(Long requestId, String statusCode);
+    int updateStatus(Long requestId, String statusCode, String approvedUser);
 }

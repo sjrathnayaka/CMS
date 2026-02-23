@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardRequestResponse {
-    
+
     private Long requestId;
     private String encryptedCardNumber;
     private String maskedCardNumber;
@@ -21,5 +21,7 @@ public class CardRequestResponse {
     private String requestStatusCode;
     private String remark;
     private LocalDateTime createdTime;
+    private String approvedUser;
+    private String requestedUser;
     private String message;
 }

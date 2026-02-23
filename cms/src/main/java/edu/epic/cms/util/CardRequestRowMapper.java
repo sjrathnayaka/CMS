@@ -12,7 +12,7 @@ import java.sql.SQLException;
  */
 @Component
 public class CardRequestRowMapper implements RowMapper<CardRequest> {
-    
+
     @Override
     public CardRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
         CardRequest request = new CardRequest();
@@ -22,6 +22,8 @@ public class CardRequestRowMapper implements RowMapper<CardRequest> {
         request.setRequestStatusCode(rs.getString("RequestStatusCode"));
         request.setRemark(rs.getString("Remark"));
         request.setCreatedTime(rs.getTimestamp("CreatedTime").toLocalDateTime());
+        request.setApprovedUser(rs.getString("ApprovedUser")); // nullable
+        request.setRequestedUser(rs.getString("RequestedUser")); // nullable
         return request;
     }
 }

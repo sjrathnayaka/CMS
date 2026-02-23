@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApproveRejectRequestDTO {
-    
-    private String remark;  // Optional remark for approval/rejection
+
+    private String remark; // Optional remark for approval/rejection
+
+    private String approvedUser; // Optional: username of the approver/rejecter
 }

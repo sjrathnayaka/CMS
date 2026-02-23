@@ -17,32 +17,34 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Card {
-    
+
     @NotBlank(message = "Card number is required")
     @Pattern(regexp = "\\d{13,16}", message = "Card number must be 13-16 digits")
-    private String cardNumber;  // Primary Key (decrypted for business logic)
-    
+    private String cardNumber; // Primary Key (decrypted for business logic)
+
     // Transient fields for API response (not stored in DB)
-    private String encryptedCardNumber;  // Encrypted value from database
-    private String maskedCardNumber;     // Masked format: 4532XXXXXXXX9012
-    
+    private String encryptedCardNumber; // Encrypted value from database
+    private String maskedCardNumber; // Masked format: 4532XXXXXXXX9012
+
     @NotNull(message = "Expiry date is required")
     @Future(message = "Expiry date must be in the future")
     private LocalDate expiryDate;
-    
-    private String cardStatus;  // Default: "IACT" (Inactive)
-    
+
+    private String cardStatus; // Default: "IACT" (Inactive)
+
     @NotNull(message = "Credit limit is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Credit limit must be >= 0")
     private BigDecimal creditLimit;
-    
+
     @NotNull(message = "Cash limit is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Cash limit must be >= 0")
     private BigDecimal cashLimit;
-    
+
     private BigDecimal availableCreditLimit;
-    
+
     private BigDecimal availableCashLimit;
-    
+
     private LocalDateTime lastUpdateTime;
+
+    private String lastUpdatedUser; // FK → Users(Username), nullable
 }

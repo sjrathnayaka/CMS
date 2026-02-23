@@ -12,9 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardRequestDTO {
-    
+
     @NotBlank(message = "Encrypted card number is required")
     private String encryptedCardNumber;
-    
-    private String remark;  // Optional remark for the request
+
+    private String remark; // Optional remark for the request
+
+    private String requestedUser; // Optional: username of the requestor
 }

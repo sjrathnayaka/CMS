@@ -2,32 +2,43 @@
 
 DROP TABLE IF EXISTS CardRequest;
 DROP TABLE IF EXISTS Card;
+DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS CardRequestType;
 DROP TABLE IF EXISTS RequestStatus;
 DROP TABLE IF EXISTS CardStatus;
 
--- Lookup table for card statuses
+/* ----------------- CREATE CARD STATUS ----------------- */
 CREATE TABLE CardStatus (
     StatusCode VARCHAR(20) PRIMARY KEY,
     Description VARCHAR(100) NOT NULL,
     CONSTRAINT chk_card_status_code CHECK (StatusCode IN ('IACT', 'CACT', 'DACT'))
 );
 
--- Lookup table for card request types
-CREATE TABLE CardRequestType (
-    Code VARCHAR(20) PRIMARY KEY,
-    Description VARCHAR(100) NOT NULL,
-    CONSTRAINT chk_request_type CHECK (Code IN ('ACTI', 'CDCL'))
-);
-
--- Lookup table for request statuses
+/* ----------------- CREATE REQUEST STATUS ----------------- */
 CREATE TABLE RequestStatus (
     StatusCode VARCHAR(20) PRIMARY KEY,
     Description VARCHAR(100) NOT NULL,
     CONSTRAINT chk_request_status_code CHECK (StatusCode IN ('PEND', 'APPR', 'RJCT'))
 );
 
--- Main Card table
+/* ----------------- CREATE CARD REQUEST TYPE ----------------- */
+CREATE TABLE CardRequestType (
+    Code VARCHAR(20) PRIMARY KEY,
+    Description VARCHAR(100) NOT NULL,
+    CONSTRAINT chk_request_type CHECK (Code IN ('ACTI', 'CDCL'))
+);
+
+/* ----------------- CREATE USERS TABLE ----------------- */
+CREATE TABLE Users (
+    Username VARCHAR(100) PRIMARY KEY,
+    Name VARCHAR(150) NOT NULL,
+    Status VARCHAR(20) NOT NULL,
+    CONSTRAINT fk_user_status
+        FOREIGN KEY (Status)
+        REFERENCES RequestStatus(StatusCode)
+);
+
+/* ----------------- CREATE CARD TABLE ----------------- */
 CREATE TABLE Card (
     CardNumber VARCHAR(255) PRIMARY KEY,  -- Encrypted card number (AES-256)
     ExpiryDate DATE NOT NULL,
@@ -37,34 +48,52 @@ CREATE TABLE Card (
     AvailableCreditLimit DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
     AvailableCashLimit DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
     LastUpdateTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    LastUpdatedUser VARCHAR(100),
     CONSTRAINT chk_credit_limit CHECK (CreditLimit >= 0),
     CONSTRAINT chk_cash_limit CHECK (CashLimit >= 0),
     CONSTRAINT chk_available_credit CHECK (AvailableCreditLimit >= 0 AND AvailableCreditLimit <= CreditLimit),
     CONSTRAINT chk_available_cash CHECK (AvailableCashLimit >= 0 AND AvailableCashLimit <= CashLimit),
-    CONSTRAINT fk_card_status FOREIGN KEY (CardStatus) REFERENCES CardStatus(StatusCode)
+    CONSTRAINT fk_card_status
+        FOREIGN KEY (CardStatus)
+        REFERENCES CardStatus(StatusCode),
+    CONSTRAINT fk_card_last_updated_user
+        FOREIGN KEY (LastUpdatedUser)
+        REFERENCES Users(Username)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
--- Card Request table
+/* ----------------- CREATE CARD REQUEST TABLE ----------------- */
 CREATE TABLE CardRequest (
     RequestId SERIAL PRIMARY KEY,
     CardNumber VARCHAR(255) NOT NULL,  -- Encrypted card number (AES-256)
     RequestReasonCode VARCHAR(20) NOT NULL,
-    RequestStatusCode VARCHAR(20),
+    RequestStatusCode VARCHAR(20) DEFAULT 'PEND',
     Remark VARCHAR(500),
     CreatedTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT fk_request_card 
-        FOREIGN KEY (CardNumber) 
-        REFERENCES Card(CardNumber) 
+    ApprovedUser VARCHAR(100),
+    RequestedUser VARCHAR(100),
+    CONSTRAINT fk_request_card
+        FOREIGN KEY (CardNumber)
+        REFERENCES Card(CardNumber)
+        ON UPDATE CASCADE
         ON DELETE CASCADE,
-
-    CONSTRAINT fk_request_type 
-        FOREIGN KEY (RequestReasonCode) 
+    CONSTRAINT fk_request_type
+        FOREIGN KEY (RequestReasonCode)
         REFERENCES CardRequestType(Code),
-
-    CONSTRAINT fk_request_status 
-        FOREIGN KEY (RequestStatusCode) 
-        REFERENCES RequestStatus(StatusCode)
+    CONSTRAINT fk_request_status
+        FOREIGN KEY (RequestStatusCode)
+        REFERENCES RequestStatus(StatusCode),
+    CONSTRAINT fk_cardrequest_approved_user
+        FOREIGN KEY (ApprovedUser)
+        REFERENCES Users(Username)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_cardrequest_requested_user
+        FOREIGN KEY (RequestedUser)
+        REFERENCES Users(Username)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 );
 
 -- Insert initial lookup data
@@ -81,6 +110,12 @@ INSERT INTO RequestStatus (StatusCode, Description) VALUES
 ('PEND', 'Pending - Request awaiting approval'),
 ('APPR', 'Approved - Request has been approved'),
 ('RJCT', 'Rejected - Request has been rejected');
+
+-- Insert sample users (status APPR = active/approved user)
+INSERT INTO Users (Username, Name, Status) VALUES
+('admin', 'System Administrator', 'APPR'),
+('john.doe', 'John Doe', 'APPR'),
+('jane.smith', 'Jane Smith', 'APPR');
 
 -- Insert sample cards (encrypted card numbers using deterministic AES-256 with URL-safe Base64)
 -- Plain card numbers: 4532015112830366, 5425233430109903, 6011111111111117, 378282246310005

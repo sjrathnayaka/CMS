@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 @Component
 public class CardRowMapper implements RowMapper<Card> {
-    
+
     @Override
     public Card mapRow(ResultSet rs, int rowNum) throws SQLException {
         Card card = new Card();
@@ -21,6 +21,7 @@ public class CardRowMapper implements RowMapper<Card> {
         card.setAvailableCreditLimit(rs.getBigDecimal("AvailableCreditLimit"));
         card.setAvailableCashLimit(rs.getBigDecimal("AvailableCashLimit"));
         card.setLastUpdateTime(rs.getTimestamp("LastUpdateTime").toLocalDateTime());
+        card.setLastUpdatedUser(rs.getString("LastUpdatedUser")); // nullable
         return card;
     }
 }

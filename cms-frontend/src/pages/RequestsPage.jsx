@@ -10,6 +10,7 @@ function RequestsPage() {
   const [selectedCard, setSelectedCard] = useState('')
   const [requestType, setRequestType] = useState('activate')
   const [remark, setRemark] = useState('')
+  const [requestedUser, setRequestedUser] = useState('')
 
   useEffect(() => {
     fetchCards()
@@ -21,8 +22,7 @@ function RequestsPage() {
       const response = await cardsApi.getAllCards()
       setCards(response.data)
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch cards'
-      setError(errorMessage)
+      setError(err.response?.data?.message || err.message || 'Failed to fetch cards')
     }
   }
 
@@ -33,8 +33,7 @@ function RequestsPage() {
       const response = await cardRequestsApi.getAllRequestsWithDetails()
       setRequests(response.data)
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch requests'
-      setError(errorMessage)
+      setError(err.response?.data?.message || err.message || 'Failed to fetch requests')
     } finally {
       setLoading(false)
     }
@@ -44,18 +43,16 @@ function RequestsPage() {
     e.preventDefault()
     setError(null)
     setSuccess(null)
-
     if (!selectedCard) {
       setError('Please select a card.')
       return
     }
-
     try {
       const requestData = {
         encryptedCardNumber: selectedCard,
         remark: remark || null,
+        requestedUser: requestedUser.trim() || null,
       }
-
       if (requestType === 'activate') {
         await cardRequestsApi.requestActivation(requestData)
         setSuccess('Activation request submitted successfully.')
@@ -63,16 +60,14 @@ function RequestsPage() {
         await cardRequestsApi.requestDeactivation(requestData)
         setSuccess('Deactivation request submitted successfully.')
       }
-
       setSelectedCard('')
       setRemark('')
+      setRequestedUser('')
       fetchRequests()
       fetchCards()
-
       setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to submit request'
-      setError(errorMessage)
+      setError(err.response?.data?.message || 'Failed to submit request')
     }
   }
 
@@ -113,11 +108,8 @@ function RequestsPage() {
 
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     })
 
   const maskCardNumber = (cardNumber) => {
@@ -129,18 +121,13 @@ function RequestsPage() {
     <div>
       <div className="card">
         <h2>Submit Card Request</h2>
-
         {success && <div className="alert alert-success">{success}</div>}
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={handleSubmitRequest}>
           <div className="form-group">
             <label htmlFor="requestType">Request Type *</label>
-            <select
-              id="requestType"
-              value={requestType}
-              onChange={(e) => setRequestType(e.target.value)}
-            >
+            <select id="requestType" value={requestType} onChange={(e) => setRequestType(e.target.value)}>
               <option value="activate">Activate Card</option>
               <option value="deactivate">Deactivate Card</option>
             </select>
@@ -148,11 +135,7 @@ function RequestsPage() {
 
           <div className="form-group">
             <label htmlFor="cardSelect">Select Card *</label>
-            <select
-              id="cardSelect"
-              value={selectedCard}
-              onChange={(e) => setSelectedCard(e.target.value)}
-            >
+            <select id="cardSelect" value={selectedCard} onChange={(e) => setSelectedCard(e.target.value)}>
               <option value="">Select a card</option>
               {cards.map((card) => (
                 <option key={card.encryptedCardNumber} value={card.encryptedCardNumber}>
@@ -163,31 +146,35 @@ function RequestsPage() {
           </div>
 
           <div className="form-group">
+            <label htmlFor="requestedUser">Requested By (Username)</label>
+            <input
+              type="text" id="requestedUser"
+              value={requestedUser}
+              onChange={(e) => setRequestedUser(e.target.value)}
+              placeholder="Enter your username (optional)"
+            />
+          </div>
+
+          <div className="form-group">
             <label htmlFor="remark">Remark (Optional)</label>
             <input
-              type="text"
-              id="remark"
+              type="text" id="remark"
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
               placeholder="Enter any additional comments"
             />
           </div>
 
-          <button type="submit" className="btn btn-primary">
-            Submit Request
-          </button>
+          <button type="submit" className="btn btn-primary">Submit Request</button>
         </form>
       </div>
 
       <div className="card">
         <h2>All Card Requests</h2>
-
         {loading ? (
           <div className="loading">Loading requests...</div>
         ) : requests.length === 0 ? (
-          <div className="empty-state">
-            <p>No requests found. Submit your first request above.</p>
-          </div>
+          <div className="empty-state"><p>No requests found. Submit your first request above.</p></div>
         ) : (
           <div className="table-container">
             <table>
@@ -198,6 +185,8 @@ function RequestsPage() {
                   <th>Request Type</th>
                   <th>Card Status</th>
                   <th>Request Status</th>
+                  <th>Requested By</th>
+                  <th>Approved By</th>
                   <th>Remark</th>
                   <th>Created At</th>
                 </tr>
@@ -206,9 +195,7 @@ function RequestsPage() {
                 {requests.map((request) => (
                   <tr key={request.requestId}>
                     <td>#{request.requestId}</td>
-                    <td>
-                      <code>{request.maskedCardNumber || maskCardNumber(request.cardNumber)}</code>
-                    </td>
+                    <td><code>{request.maskedCardNumber || maskCardNumber(request.cardNumber)}</code></td>
                     <td>{getRequestTypeText(request.requestReasonCode)}</td>
                     <td>{request.cardStatusDescription || getCardStatusText(request.cardStatus)}</td>
                     <td>
@@ -216,6 +203,8 @@ function RequestsPage() {
                         {getStatusText(request.requestStatusCode)}
                       </span>
                     </td>
+                    <td>{request.requestedUser || '—'}</td>
+                    <td>{request.approvedUser || '—'}</td>
                     <td>{request.remark || '—'}</td>
                     <td>{formatDate(request.createdTime)}</td>
                   </tr>

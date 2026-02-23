@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardResponse {
-    private String encryptedCardNumber;  // Encrypted card number (primary key)
-    private String maskedCardNumber;     // Masked format: 4532XXXXXXXX9012
+    private String encryptedCardNumber; // Encrypted card number (primary key)
+    private String maskedCardNumber; // Masked format: 4532XXXXXXXX9012
     private LocalDate expiryDate;
     private BigDecimal creditLimit;
     private BigDecimal cashLimit;
@@ -25,5 +25,6 @@ public class CardResponse {
     private BigDecimal availableCreditLimit;
     private BigDecimal availableCashLimit;
     private LocalDateTime lastUpdateTime;
+    private String lastUpdatedUser;
     private String message;
 }
