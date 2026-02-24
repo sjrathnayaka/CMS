@@ -194,28 +194,7 @@ function ReportsPage() {
                 })}
             </div>
 
-            <div className="card" style={{ marginTop: '1.5rem' }}>
-                <h3>API Endpoints</h3>
-                <p className="subtitle">These endpoints are also accessible directly via Postman or browser.</p>
-                <div className="endpoint-list">
-                    {[
-                        ['GET', '/api/reports/cards/pdf', 'Cards — PDF'],
-                        ['GET', '/api/reports/cards/csv', 'Cards — CSV'],
-                        ['GET', '/api/reports/card-requests/pdf', 'Card Requests — PDF'],
-                        ['GET', '/api/reports/card-requests/csv', 'Card Requests — CSV'],
-                        ['GET', '/api/reports/approvals/pdf', 'Approvals — PDF'],
-                        ['GET', '/api/reports/approvals/csv', 'Approvals — CSV'],
-                        ['GET', '/api/reports/audit/pdf', 'Audit — PDF'],
-                        ['GET', '/api/reports/audit/csv', 'Audit — CSV'],
-                    ].map(([method, path, label]) => (
-                        <div key={path} className="endpoint-row">
-                            <span className="endpoint-method">{method}</span>
-                            <code className="endpoint-path">{path}</code>
-                            <span className="endpoint-label">{label}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
+
         </div>
     )
 }
