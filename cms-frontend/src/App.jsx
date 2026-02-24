@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import CardsPage from './pages/CardsPage'
 import RequestsPage from './pages/RequestsPage'
 import ApproveRejectPage from './pages/ApproveRejectPage'
+import ReportsPage from './pages/ReportsPage'
 
 function Navigation() {
   const location = useLocation()
@@ -29,6 +30,11 @@ function Navigation() {
               Approvals
             </Link>
           </li>
+          <li>
+            <Link to="/reports" className={location.pathname === '/reports' ? 'active' : ''}>
+              Reports
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>
@@ -44,6 +50,7 @@ function App() {
           <Route path="/" element={<CardsPage />} />
           <Route path="/requests" element={<RequestsPage />} />
           <Route path="/approvals" element={<ApproveRejectPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
         </Routes>
       </div>
     </Router>

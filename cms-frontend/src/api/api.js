@@ -61,4 +61,24 @@ export const encryptionApi = {
   getPublicKey: () => api.get('/encryption/public-key'),
 }
 
+// Reports API
+export const reportsApi = {
+  downloadCardsPdf: () =>
+    api.get('/reports/cards/pdf', { responseType: 'arraybuffer' }),
+  downloadCardsCsv: () =>
+    api.get('/reports/cards/csv', { responseType: 'arraybuffer' }),
+  downloadCardRequestsPdf: () =>
+    api.get('/reports/card-requests/pdf', { responseType: 'arraybuffer' }),
+  downloadCardRequestsCsv: () =>
+    api.get('/reports/card-requests/csv', { responseType: 'arraybuffer' }),
+  downloadApprovalsPdf: () =>
+    api.get('/reports/approvals/pdf', { responseType: 'arraybuffer' }),
+  downloadApprovalsCsv: () =>
+    api.get('/reports/approvals/csv', { responseType: 'arraybuffer' }),
+  downloadAuditPdf: () =>
+    api.get('/reports/audit/pdf', { responseType: 'arraybuffer' }),
+  downloadAuditCsv: () =>
+    api.get('/reports/audit/csv', { responseType: 'arraybuffer' }),
+}
+
 export default api

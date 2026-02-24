@@ -14,6 +14,7 @@ import edu.epic.cms.model.Card;
 import edu.epic.cms.model.CardRequest;
 import edu.epic.cms.repository.CardRepo;
 import edu.epic.cms.repository.CardRequestRepo;
+import edu.epic.cms.service.AuditService;
 import edu.epic.cms.service.CardRequestService;
 import edu.epic.cms.service.EncryptionService;
 import edu.epic.cms.util.Util;
@@ -38,6 +39,7 @@ public class CardRequestServiceImpl implements CardRequestService {
     private final CardRequestRepo cardRequestRepo;
     private final CardRepo cardRepo;
     private final EncryptionService encryptionService;
+    private final AuditService auditService;
 
     @Override
     @Transactional
@@ -71,6 +73,11 @@ public class CardRequestServiceImpl implements CardRequestService {
 
         CardRequest savedRequest = cardRequestRepo.save(request);
 
+        auditService.logActivity("CARD_DEACTIVATION_REQUESTED",
+                "Deactivation requested for card: " + encryptedCardNumber + ". Request ID: "
+                        + savedRequest.getRequestId(),
+                requestDTO.getRequestedUser());
+
         log.info("Card deactivation request created (pending approval) for card: {}", encryptedCardNumber);
 
         return savedRequest;
@@ -99,6 +106,11 @@ public class CardRequestServiceImpl implements CardRequestService {
         request.setRequestedUser(requestDTO.getRequestedUser());
 
         CardRequest savedRequest = cardRequestRepo.save(request);
+
+        auditService.logActivity("CARD_ACTIVATION_REQUESTED",
+                "Activation requested for card: " + encryptedCardNumber + ". Request ID: "
+                        + savedRequest.getRequestId(),
+                requestDTO.getRequestedUser());
 
         log.info("Card activation request created (pending approval) for card: {}", encryptedCardNumber);
 
@@ -258,6 +270,11 @@ public class CardRequestServiceImpl implements CardRequestService {
         request.setApprovedUser(approvedUser);
         cardRequestRepo.updateStatus(requestId, RequestStatus.APPR.getCode(), approvedUser);
 
+        auditService.logActivity("REQUEST_APPROVED",
+                "Request ID: " + requestId + " (" + request.getRequestReasonCode() + ") approved for card: "
+                        + request.getCardNumber(),
+                approvedUser);
+
         return request;
     }
 
@@ -281,6 +298,11 @@ public class CardRequestServiceImpl implements CardRequestService {
         }
         request.setApprovedUser(approvedUser);
         cardRequestRepo.updateStatus(requestId, RequestStatus.RJCT.getCode(), approvedUser);
+
+        auditService.logActivity("REQUEST_REJECTED",
+                "Request ID: " + requestId + " (" + request.getRequestReasonCode() + ") rejected for card: "
+                        + request.getCardNumber(),
+                approvedUser);
 
         log.info("Card request rejected: {}", requestId);
 

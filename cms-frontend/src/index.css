@@ -5,36 +5,36 @@
    ============================================= */
 
 :root {
-  --amber:        #FFB300;
-  --amber-dark:   #E65100;
-  --amber-light:  #FFF8E1;
+  --amber: #FFB300;
+  --amber-dark: #E65100;
+  --amber-light: #FFF8E1;
   --amber-border: #FFE082;
 
-  --bg:           #FFFFFF;
-  --surface:      #FFFFFF;
-  --surface-alt:  #FAFAFA;
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-alt: #FAFAFA;
 
-  --text-primary:   #1A1A1A;
+  --text-primary: #1A1A1A;
   --text-secondary: #5C5C5C;
-  --text-muted:     #9E9E9E;
+  --text-muted: #9E9E9E;
 
-  --border:       #E8E8E8;
+  --border: #E8E8E8;
   --border-focus: #FFB300;
 
-  --success-bg:   #F0FFF4;
+  --success-bg: #F0FFF4;
   --success-text: #2D7D46;
-  --success-border:#38A169;
+  --success-border: #38A169;
 
-  --error-bg:     #FFF5F5;
-  --error-text:   #C53030;
+  --error-bg: #FFF5F5;
+  --error-text: #C53030;
   --error-border: #E53E3E;
 
-  --radius-sm:  4px;
-  --radius-md:  6px;
-  --radius-lg:  8px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
 
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md:  0 2px 8px rgba(0,0,0,0.08);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
@@ -372,19 +372,22 @@ body {
   text-transform: uppercase;
 }
 
-.status-active, .card-active {
+.status-active,
+.card-active {
   background: #F0FFF4;
   color: #276749;
   border: 1px solid #9AE6B4;
 }
 
-.status-inactive, .card-inactive {
+.status-inactive,
+.card-inactive {
   background: #F7FAFC;
   color: #4A5568;
   border: 1px solid #CBD5E0;
 }
 
-.status-deactivated, .card-deactivated {
+.status-deactivated,
+.card-deactivated {
   background: var(--error-bg);
   color: var(--error-text);
   border: 1px solid #FEB2B2;
@@ -622,13 +625,25 @@ code {
 
 /* ── Keyframes ──────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(12px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* ── Responsive ─────────────────────────────── */
@@ -666,8 +681,171 @@ code {
     border-bottom: none;
   }
 
-  th, td {
+  th,
+  td {
     padding: 0.6rem 0.75rem;
     font-size: 12px;
   }
+}
+
+/* ── Reports Page ───────────────────────────── */
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.report-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--amber-border);
+}
+
+.report-card-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+
+.report-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.report-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: none;
+  padding: 0;
+}
+
+.report-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.report-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-report-pdf {
+  background: #FFF5F5;
+  color: #C53030;
+  border: 1px solid #FEB2B2;
+  padding: 0.5rem 0.9rem;
+  font-size: 12px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-report-pdf:hover:not(:disabled) {
+  background: #FED7D7;
+  box-shadow: 0 2px 6px rgba(197, 48, 48, 0.2);
+}
+
+.btn-report-csv {
+  background: #F0FFF4;
+  color: #276749;
+  border: 1px solid #9AE6B4;
+  padding: 0.5rem 0.9rem;
+  font-size: 12px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-report-csv:hover:not(:disabled) {
+  background: #C6F6D5;
+  box-shadow: 0 2px 6px rgba(39, 103, 73, 0.2);
+}
+
+/* Spinner for loading state */
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Endpoint reference table */
+.endpoint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.endpoint-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+}
+
+.endpoint-method {
+  font-size: 11px;
+  font-weight: 700;
+  color: #276749;
+  background: #F0FFF4;
+  border: 1px solid #9AE6B4;
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.45rem;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.endpoint-path {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.endpoint-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }

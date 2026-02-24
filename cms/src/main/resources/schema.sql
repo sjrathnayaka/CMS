@@ -2,6 +2,7 @@
 
 DROP TABLE IF EXISTS CardRequest;
 DROP TABLE IF EXISTS Card;
+DROP TABLE IF EXISTS AuditLog;
 DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS CardRequestType;
 DROP TABLE IF EXISTS RequestStatus;
@@ -94,6 +95,20 @@ CREATE TABLE CardRequest (
         REFERENCES Users(Username)
         ON UPDATE CASCADE
         ON DELETE CASCADE
+);
+
+/* ----------------- CREATE AUDIT LOG TABLE ----------------- */
+CREATE TABLE AuditLog (
+    LogId SERIAL PRIMARY KEY,
+    ActivityType VARCHAR(50) NOT NULL,
+    Description TEXT,
+    PerformUser VARCHAR(100),
+    LogTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_audit_perform_user
+        FOREIGN KEY (PerformUser)
+        REFERENCES Users(Username)
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
 );
 
 -- Insert initial lookup data

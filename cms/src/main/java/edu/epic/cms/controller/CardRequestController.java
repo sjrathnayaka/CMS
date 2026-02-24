@@ -15,6 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +30,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CardRequestController {
 
+    private static final Logger log = LoggerFactory.getLogger(CardRequestController.class);
+
     private final CardRequestService cardRequestService;
     private final CardService cardService;
     private final EncryptionService encryptionService;
@@ -36,7 +41,9 @@ public class CardRequestController {
      */
     @PostMapping("/deactivate")
     public ResponseEntity<CardRequestResponse> requestDeactivation(@Valid @RequestBody CardRequestDTO requestDTO) {
+        log.info("Received request to deactivate card: {}", requestDTO.getEncryptedCardNumber());
         CardRequest savedRequest = cardRequestService.requestCardDeactivation(requestDTO);
+        log.info("Card deactivation request created successfully with ID: {}", savedRequest.getRequestId());
         CardRequestResponse response = buildResponse(savedRequest,
                 "Card deactivation request created successfully (pending approval)");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -47,7 +54,9 @@ public class CardRequestController {
      */
     @PostMapping("/activate")
     public ResponseEntity<CardRequestResponse> requestActivation(@Valid @RequestBody CardRequestDTO requestDTO) {
+        log.info("Received request to activate card: {}", requestDTO.getEncryptedCardNumber());
         CardRequest savedRequest = cardRequestService.requestCardActivation(requestDTO);
+        log.info("Card activation request created successfully with ID: {}", savedRequest.getRequestId());
         CardRequestResponse response = buildResponse(savedRequest,
                 "Card activation request created successfully (pending approval)");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

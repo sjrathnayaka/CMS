@@ -1,5 +1,8 @@
 package edu.epic.cms.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,8 +16,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "cardrequest")
 public class CardRequest {
-
+    @Id
     private Long requestId; // Auto-generated primary key
 
     private String cardNumber; // Encrypted card number (foreign key to Card table)

@@ -1,5 +1,8 @@
 package edu.epic.cms.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,10 +19,13 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "card")
 public class Card {
 
     @NotBlank(message = "Card number is required")
     @Pattern(regexp = "\\d{13,16}", message = "Card number must be 13-16 digits")
+    @Id
     private String cardNumber; // Primary Key (decrypted for business logic)
 
     // Transient fields for API response (not stored in DB)
