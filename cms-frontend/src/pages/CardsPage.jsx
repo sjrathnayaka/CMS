@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { cardsApi } from '../api/api'
 import { fetchPublicKey, encryptField } from '../utils/encryption'
+import MonthPicker from '../components/MonthPicker'
 
 function CardsPage() {
   const [cards, setCards] = useState([])
@@ -8,6 +9,7 @@ function CardsPage() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+
   const [formData, setFormData] = useState({
     cardNumber: '',
     expiryDate: '',
@@ -49,15 +51,32 @@ function CardsPage() {
     if (formErrors[name]) setFormErrors({ ...formErrors, [name]: null })
   }
 
+  const handleExpiryChange = (val) => {
+    setFormData({ ...formData, expiryDate: val })
+    if (formErrors.expiryDate) setFormErrors({ ...formErrors, expiryDate: null })
+  }
+
   const validateForm = () => {
     const errors = {}
     if (!formData.cardNumber || !/^\d{16}$/.test(formData.cardNumber))
       errors.cardNumber = 'Card number must be exactly 16 digits'
+
     if (!formData.expiryDate) {
       errors.expiryDate = 'Expiry date is required'
-    } else if (new Date(formData.expiryDate) <= new Date()) {
-      errors.expiryDate = 'Expiry date must be in the future'
+    } else {
+      const now = new Date()
+      const currentYear = now.getFullYear()
+      const currentMonth = now.getMonth() + 1
+
+      const parts = formData.expiryDate.split('-')
+      const selYear = parseInt(parts[0])
+      const selMonth = parseInt(parts[1])
+
+      if (selYear < currentYear || (selYear === currentYear && selMonth < currentMonth)) {
+        errors.expiryDate = 'Expiry date cannot be in the past'
+      }
     }
+
     if (!formData.creditLimit || parseFloat(formData.creditLimit) <= 0)
       errors.creditLimit = 'Credit limit must be greater than 0'
     if (!formData.cashLimit || parseFloat(formData.cashLimit) <= 0)
@@ -75,6 +94,7 @@ function CardsPage() {
     try {
       const publicKey = publicKeyRef.current || (await fetchPublicKey())
       publicKeyRef.current = publicKey
+
       const encryptedPayload = {
         cardNumber: encryptField(publicKey, formData.cardNumber),
         expiryDate: encryptField(publicKey, formData.expiryDate),
@@ -119,6 +139,14 @@ function CardsPage() {
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 
+  const formatExpiryDisplay = (dateString) => {
+    if (!dateString) return '—'
+    const date = new Date(dateString)
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear().toString().slice(-2)
+    return `${month}/${year}`
+  }
+
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 
@@ -152,11 +180,11 @@ function CardsPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="expiryDate">Expiry Date *</label>
-              <input
-                type="date" id="expiryDate" name="expiryDate"
-                value={formData.expiryDate} onChange={handleInputChange}
-                className={formErrors.expiryDate ? 'input-error' : ''}
+              <label>Expiry Date *</label>
+              <MonthPicker
+                value={formData.expiryDate}
+                onChange={handleExpiryChange}
+                error={!!formErrors.expiryDate}
               />
               {formErrors.expiryDate && <div className="error">{formErrors.expiryDate}</div>}
             </div>
@@ -216,7 +244,7 @@ function CardsPage() {
                 {cards.map((card) => (
                   <tr key={card.encryptedCardNumber}>
                     <td><code>{card.maskedCardNumber || maskCardNumber(card.cardNumber)}</code></td>
-                    <td>{formatDate(card.expiryDate)}</td>
+                    <td>{formatExpiryDisplay(card.expiryDate)}</td>
                     <td>
                       <span className={getStatusBadgeClass(card.cardStatus)}>
                         {getStatusText(card.cardStatus)}

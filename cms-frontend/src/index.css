@@ -205,11 +205,11 @@ body {
   box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.12);
 }
 
-.form-group input.input-error {
-  border-color: var(--error-border);
+.input-error {
+  border-color: var(--error-border) !important;
 }
 
-.form-group input.input-error:focus {
+.input-error:focus-within {
   box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.12);
 }
 
@@ -797,6 +797,97 @@ code {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ── Month Picker ───────────────────────────── */
+.month-picker-container {
+  position: relative;
+  width: 100%;
+}
+
+.month-picker-input {
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface) !important;
+}
+
+.month-picker-popover {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  width: 260px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  padding: 0.75rem;
+  animation: fadeIn 0.15s ease;
+}
+
+.month-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--surface-alt);
+}
+
+.month-picker-year {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.month-cell {
+  padding: 0.6rem 0.4rem;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.month-cell:hover:not(.disabled) {
+  background: var(--amber-light);
+  color: var(--amber-dark);
+}
+
+.month-cell.selected {
+  background: var(--amber);
+  color: #1A1A1A;
+  font-weight: 700;
+}
+
+.month-cell.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.nav-btn:hover {
+  background: var(--surface-alt);
+  color: var(--text-primary);
 }
 
 /* Endpoint reference table */
