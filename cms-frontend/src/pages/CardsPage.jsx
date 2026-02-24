@@ -79,8 +79,11 @@ function CardsPage() {
 
     if (!formData.creditLimit || parseFloat(formData.creditLimit) <= 0)
       errors.creditLimit = 'Credit limit must be greater than 0'
-    if (!formData.cashLimit || parseFloat(formData.cashLimit) <= 0)
+    if (!formData.cashLimit || parseFloat(formData.cashLimit) <= 0) {
       errors.cashLimit = 'Cash limit must be greater than 0'
+    } else if (parseFloat(formData.cashLimit) > parseFloat(formData.creditLimit)) {
+      errors.cashLimit = 'Cash limit cannot exceed credit limit'
+    }
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
