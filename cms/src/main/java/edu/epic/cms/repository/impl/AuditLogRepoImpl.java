@@ -56,4 +56,31 @@ public class AuditLogRepoImpl implements AuditLogRepo {
         String sql = "SELECT * FROM AuditLog ORDER BY LogTime DESC";
         return jdbcTemplate.query(sql, rowMapper);
     }
+
+    @Override
+    public List<AuditLog> findAllFiltered(String performUser, String activityType, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM AuditLog WHERE 1=1");
+        java.util.List<Object> args = new java.util.ArrayList<>();
+
+        if (performUser != null && !performUser.isEmpty()) {
+            sql.append(" AND PerformUser = ?");
+            args.add(performUser);
+        }
+        if (activityType != null && !activityType.isEmpty()) {
+            sql.append(" AND ActivityType = ?");
+            args.add(activityType);
+        }
+        if (fromDate != null) {
+            sql.append(" AND LogTime >= ?");
+            args.add(Timestamp.valueOf(fromDate));
+        }
+        if (toDate != null) {
+            sql.append(" AND LogTime <= ?");
+            args.add(Timestamp.valueOf(toDate));
+        }
+
+        sql.append(" ORDER BY LogTime DESC");
+        return jdbcTemplate.query(sql.toString(), rowMapper, args.toArray());
+    }
 }

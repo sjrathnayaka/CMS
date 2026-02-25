@@ -12,8 +12,8 @@ const REPORTS = [
                 <line x1="1" y1="10" x2="23" y2="10" />
             </svg>
         ),
-        pdf: () => reportsApi.downloadCardsPdf(),
-        csv: () => reportsApi.downloadCardsCsv(),
+        pdf: (params) => reportsApi.downloadCardsPdf(params),
+        csv: (params) => reportsApi.downloadCardsCsv(params),
         pdfFile: 'cards_report.pdf',
         csvFile: 'cards_report.csv',
     },
@@ -30,8 +30,8 @@ const REPORTS = [
                 <line x1="9" y1="8" x2="15" y2="8" />
             </svg>
         ),
-        pdf: () => reportsApi.downloadCardRequestsPdf(),
-        csv: () => reportsApi.downloadCardRequestsCsv(),
+        pdf: (params) => reportsApi.downloadCardRequestsPdf(params),
+        csv: (params) => reportsApi.downloadCardRequestsCsv(params),
         pdfFile: 'card_requests_report.pdf',
         csvFile: 'card_requests_report.csv',
     },
@@ -45,8 +45,8 @@ const REPORTS = [
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
             </svg>
         ),
-        pdf: () => reportsApi.downloadApprovalsPdf(),
-        csv: () => reportsApi.downloadApprovalsCsv(),
+        pdf: (params) => reportsApi.downloadApprovalsPdf(params),
+        csv: (params) => reportsApi.downloadApprovalsCsv(params),
         pdfFile: 'approvals_report.pdf',
         csvFile: 'approvals_report.csv',
     },
@@ -62,8 +62,8 @@ const REPORTS = [
                 <line x1="11" y1="8" x2="11" y2="14" />
             </svg>
         ),
-        pdf: () => reportsApi.downloadAuditPdf(),
-        csv: () => reportsApi.downloadAuditCsv(),
+        pdf: (params) => reportsApi.downloadAuditPdf(params),
+        csv: (params) => reportsApi.downloadAuditCsv(params),
         pdfFile: 'audit_report.pdf',
         csvFile: 'audit_report.csv',
     },
@@ -74,6 +74,14 @@ function ReportsPage() {
     const [states, setStates] = useState({})
     const [globalError, setGlobalError] = useState(null)
 
+    // Track filters per report card
+    const [filters, setFilters] = useState({
+        cards: { status: '', fromDate: '', toDate: '' },
+        'card-requests': { statusCode: '', typeCode: '', fromDate: '', toDate: '' },
+        approvals: { statusCode: '', typeCode: '', fromDate: '', toDate: '' },
+        audit: { performUser: '', activityType: '', fromDate: '', toDate: '' }
+    })
+
     const getState = (id, fmt) => states[`${id}_${fmt}`] || {}
 
     const setLoading = (id, fmt, loading) =>
@@ -82,12 +90,39 @@ function ReportsPage() {
     const setError = (id, fmt, error) =>
         setStates((prev) => ({ ...prev, [`${id}_${fmt}`]: { ...prev[`${id}_${fmt}`], error } }))
 
+    const handleFilterChange = (reportId, field, value) => {
+        setFilters(prev => ({
+            ...prev,
+            [reportId]: {
+                ...prev[reportId],
+                [field]: value
+            }
+        }))
+    }
+
     const download = async (report, fmt) => {
         setGlobalError(null)
         setLoading(report.id, fmt, true)
         setError(report.id, fmt, null)
+
+        // Prepare params (LocalDateTime expects T between date and time)
+        // Spring @DateTimeFormat(iso = ISO.DATE_TIME) works with YYYY-MM-DDTHH:mm:ss
+        const params = { ...filters[report.id] }
+
+        // Convert empty strings to null so they aren't sent as empty queries
+        Object.keys(params).forEach(key => {
+            if (params[key] === '') {
+                params[key] = null
+            } else if (key === 'fromDate' || key === 'toDate') {
+                // For LocalDateTime fields, add the time part if it's not a LocalDate-only report
+                if (report.id !== 'cards' && params[key]) {
+                    params[key] = key === 'fromDate' ? `${params[key]}T00:00:00` : `${params[key]}T23:59:59`
+                }
+            }
+        })
+
         try {
-            const res = fmt === 'pdf' ? await report.pdf() : await report.csv()
+            const res = fmt === 'pdf' ? await report.pdf(params) : await report.csv(params)
             const blob = new Blob([res.data], {
                 type: fmt === 'pdf' ? 'application/pdf' : 'text/csv',
             })
@@ -130,12 +165,103 @@ function ReportsPage() {
                 {REPORTS.map((report) => {
                     const pdfState = getState(report.id, 'pdf')
                     const csvState = getState(report.id, 'csv')
+                    const reportFilters = filters[report.id]
+
                     return (
                         <div key={report.id} className="report-card">
                             <div className="report-card-icon">{report.icon}</div>
                             <div className="report-card-body">
                                 <h3 className="report-card-title">{report.title}</h3>
                                 <p className="report-card-desc">{report.description}</p>
+
+                                <div className="report-filters">
+                                    <div className="filter-group-horizontal">
+                                        {report.id === 'cards' && (
+                                            <div className="filter-item">
+                                                <label>Status</label>
+                                                <select
+                                                    value={reportFilters.status}
+                                                    onChange={(e) => handleFilterChange(report.id, 'status', e.target.value)}
+                                                >
+                                                    <option value="">All Statuses</option>
+                                                    <option value="CACT">Active</option>
+                                                    <option value="DACT">Deactivated</option>
+                                                    <option value="IACT">Inactive</option>
+                                                </select>
+                                            </div>
+                                        )}
+
+                                        {(report.id === 'card-requests' || report.id === 'approvals') && (
+                                            <>
+                                                <div className="filter-item">
+                                                    <label>Status</label>
+                                                    <select
+                                                        value={reportFilters.statusCode}
+                                                        onChange={(e) => handleFilterChange(report.id, 'statusCode', e.target.value)}
+                                                    >
+                                                        <option value="">All Statuses</option>
+                                                        <option value="PEND">Pending</option>
+                                                        <option value="APPR">Approved</option>
+                                                        <option value="RJCT">Rejected</option>
+                                                    </select>
+                                                </div>
+                                                <div className="filter-item">
+                                                    <label>Type</label>
+                                                    <select
+                                                        value={reportFilters.typeCode}
+                                                        onChange={(e) => handleFilterChange(report.id, 'typeCode', e.target.value)}
+                                                    >
+                                                        <option value="">All Types</option>
+                                                        <option value="ACTI">Activation</option>
+                                                        <option value="CDCL">Deactivation</option>
+                                                    </select>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {report.id === 'audit' && (
+                                            <>
+                                                <div className="filter-item">
+                                                    <label>User</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Username..."
+                                                        value={reportFilters.performUser}
+                                                        onChange={(e) => handleFilterChange(report.id, 'performUser', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="filter-item">
+                                                    <label>Activity</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Type..."
+                                                        value={reportFilters.activityType}
+                                                        onChange={(e) => handleFilterChange(report.id, 'activityType', e.target.value)}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    <div className="filter-group-horizontal" style={{ marginTop: '0.5rem' }}>
+                                        <div className="filter-item">
+                                            <label>From Date</label>
+                                            <input
+                                                type="date"
+                                                value={reportFilters.fromDate}
+                                                onChange={(e) => handleFilterChange(report.id, 'fromDate', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="filter-item">
+                                            <label>To Date</label>
+                                            <input
+                                                type="date"
+                                                value={reportFilters.toDate}
+                                                onChange={(e) => handleFilterChange(report.id, 'toDate', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
 
                                 {(pdfState.error || csvState.error) && (
                                     <div className="alert alert-error" style={{ fontSize: '12px', padding: '0.5rem 0.75rem', marginBottom: '0.75rem' }}>

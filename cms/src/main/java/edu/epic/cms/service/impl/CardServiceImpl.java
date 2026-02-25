@@ -161,26 +161,26 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<Card> getAllCards() {
-        List<Card> cards = cardRepo.findAll();
+        return processCards(cardRepo.findAll());
+    }
 
-        // Process each card: decrypt only for masking, keep encrypted version for API
-        // Filter out cards that can't be decrypted (invalid encryption key)
+    @Override
+    public List<Card> getAllCardsFiltered(String status, java.time.LocalDate fromDate, java.time.LocalDate toDate) {
+        return processCards(cardRepo.findAllFiltered(status, fromDate, toDate));
+    }
+
+    private List<Card> processCards(List<Card> cards) {
         return cards.stream()
                 .filter(card -> {
                     try {
-                        // Store the encrypted card number (this is the primary key from DB)
                         String encryptedCardNumber = card.getCardNumber();
                         card.setEncryptedCardNumber(encryptedCardNumber);
-
-                        // Decrypt only to create masked version for display
                         String decryptedCardNumber = encryptionService.decrypt(encryptedCardNumber);
                         card.setMaskedCardNumber(Util.maskCardNumber(decryptedCardNumber));
-
-                        return true; // Keep this card in the result
+                        return true;
                     } catch (Exception e) {
-                        log.warn("Skipping card that cannot be decrypted (encryption key mismatch): {}",
-                                e.getMessage());
-                        return false; // Remove this card from the result
+                        log.warn("Skipping card that cannot be decrypted: {}", e.getMessage());
+                        return false;
                     }
                 })
                 .collect(Collectors.toList());

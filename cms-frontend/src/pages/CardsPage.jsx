@@ -17,6 +17,18 @@ function CardsPage() {
     cashLimit: '',
   })
   const [formErrors, setFormErrors] = useState({})
+
+  // Update Modal State
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
+  const [editingCard, setEditingCard] = useState(null)
+  const [updateFormData, setUpdateFormData] = useState({
+    expiryDate: '',
+    creditLimit: '',
+    cashLimit: '',
+  })
+  const [updateErrors, setUpdateErrors] = useState({})
+  const [updateSubmitting, setUpdateSubmitting] = useState(false)
+
   const publicKeyRef = useRef(null)
 
   useEffect(() => {
@@ -56,6 +68,35 @@ function CardsPage() {
     if (formErrors.expiryDate) setFormErrors({ ...formErrors, expiryDate: null })
   }
 
+  // Update Form Handlers
+  const handleUpdateInputChange = (e) => {
+    const { name, value } = e.target
+    setUpdateFormData({ ...updateFormData, [name]: value })
+    if (updateErrors[name]) setUpdateErrors({ ...updateErrors, [name]: null })
+  }
+
+  const handleUpdateExpiryChange = (val) => {
+    setUpdateFormData({ ...updateFormData, expiryDate: val })
+    if (updateErrors.expiryDate) setUpdateErrors({ ...updateErrors, expiryDate: null })
+  }
+
+  const handleUpdateClick = (card) => {
+    setEditingCard(card)
+    setUpdateFormData({
+      expiryDate: card.expiryDate,
+      creditLimit: card.creditLimit.toString(),
+      cashLimit: card.cashLimit.toString(),
+    })
+    setUpdateErrors({})
+    setIsUpdateModalOpen(true)
+  }
+
+  const closeUpdateModal = () => {
+    setIsUpdateModalOpen(false)
+    setEditingCard(null)
+    setUpdateErrors({})
+  }
+
   const validateForm = () => {
     const errors = {}
     if (!formData.cardNumber || !/^\d{16}$/.test(formData.cardNumber))
@@ -85,6 +126,33 @@ function CardsPage() {
       errors.cashLimit = 'Cash limit cannot exceed credit limit'
     }
     setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const validateUpdateForm = () => {
+    const errors = {}
+    if (!updateFormData.expiryDate) {
+      errors.expiryDate = 'Expiry date is required'
+    } else {
+      const now = new Date()
+      const currentYear = now.getFullYear()
+      const currentMonth = now.getMonth() + 1
+      const parts = updateFormData.expiryDate.split('-')
+      const selYear = parseInt(parts[0])
+      const selMonth = parseInt(parts[1])
+      if (selYear < currentYear || (selYear === currentYear && selMonth < currentMonth)) {
+        errors.expiryDate = 'Expiry date cannot be in the past'
+      }
+    }
+
+    if (!updateFormData.creditLimit || parseFloat(updateFormData.creditLimit) <= 0)
+      errors.creditLimit = 'Credit limit must be greater than 0'
+    if (!updateFormData.cashLimit || parseFloat(updateFormData.cashLimit) <= 0) {
+      errors.cashLimit = 'Cash limit must be greater than 0'
+    } else if (parseFloat(updateFormData.cashLimit) > parseFloat(updateFormData.creditLimit)) {
+      errors.cashLimit = 'Cash limit cannot exceed credit limit'
+    }
+    setUpdateErrors(errors)
     return Object.keys(errors).length === 0
   }
 
@@ -118,6 +186,28 @@ function CardsPage() {
       )
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault()
+    if (!validateUpdateForm()) return
+    setUpdateSubmitting(true)
+    try {
+      const payload = {
+        expiryDate: updateFormData.expiryDate,
+        creditLimit: parseFloat(updateFormData.creditLimit),
+        cashLimit: parseFloat(updateFormData.cashLimit),
+      }
+      await cardsApi.updateCard(editingCard.encryptedCardNumber, payload)
+      setSuccess('Card updated successfully.')
+      closeUpdateModal()
+      fetchCards()
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err) {
+      setUpdateErrors({ form: err.response?.data?.message || 'Failed to update card' })
+    } finally {
+      setUpdateSubmitting(false)
     }
   }
 
@@ -155,7 +245,7 @@ function CardsPage() {
 
   const maskCardNumber = (cardNumber) => {
     if (!cardNumber || cardNumber.length < 4) return cardNumber
-    return 'XXXX-XXXX-XXXX-' + cardNumber.slice(-4)
+    return "****-****-****-" + cardNumber.slice(-4)
   }
 
   return (
@@ -240,13 +330,17 @@ function CardsPage() {
                   <th>Available Credit</th>
                   <th>Available Cash</th>
                   <th>Last Updated</th>
-                  <th>Updated By</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {cards.map((card) => (
-                  <tr key={card.encryptedCardNumber}>
-                    <td><code>{card.maskedCardNumber || maskCardNumber(card.cardNumber)}</code></td>
+                  <tr key={card.encryptedCardNumber || card.cardNumber}>
+                    <td>
+                      <code>
+                        {(card.maskedCardNumber || maskCardNumber(card.cardNumber))?.replaceAll('X', '*')}
+                      </code>
+                    </td>
                     <td>{formatExpiryDisplay(card.expiryDate)}</td>
                     <td>
                       <span className={getStatusBadgeClass(card.cardStatus)}>
@@ -258,7 +352,14 @@ function CardsPage() {
                     <td>{formatCurrency(card.availableCreditLimit)}</td>
                     <td>{formatCurrency(card.availableCashLimit)}</td>
                     <td>{formatDate(card.lastUpdateTime)}</td>
-                    <td>{card.lastUpdatedUser || '—'}</td>
+                    <td>
+                      <button
+                        className="btn btn-update"
+                        onClick={() => handleUpdateClick(card)}
+                      >
+                        Update
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -266,6 +367,65 @@ function CardsPage() {
           </div>
         )}
       </div>
+
+      {isUpdateModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Update Card Details</h2>
+              <button className="btn-close" onClick={closeUpdateModal}>&times;</button>
+            </div>
+
+            <form onSubmit={handleUpdateSubmit}>
+              {updateErrors.form && <div className="alert alert-error">{updateErrors.form}</div>}
+
+              <div className="form-group">
+                <label>Card Number</label>
+                <code>{editingCard.maskedCardNumber?.replaceAll('X', '*')}</code>
+              </div>
+
+              <div className="form-group">
+                <label>Expiry Date *</label>
+                <MonthPicker
+                  value={updateFormData.expiryDate}
+                  onChange={handleUpdateExpiryChange}
+                  error={!!updateErrors.expiryDate}
+                />
+                {updateErrors.expiryDate && <div className="error">{updateErrors.expiryDate}</div>}
+              </div>
+
+              <div className="form-group">
+                <label>Credit Limit *</label>
+                <input
+                  type="number" name="creditLimit"
+                  value={updateFormData.creditLimit} onChange={handleUpdateInputChange}
+                  step="0.01" min="0"
+                  className={updateErrors.creditLimit ? 'input-error' : ''}
+                />
+                {updateErrors.creditLimit && <div className="error">{updateErrors.creditLimit}</div>}
+              </div>
+
+              <div className="form-group">
+                <label>Cash Limit *</label>
+                <input
+                  type="number" name="cashLimit"
+                  value={updateFormData.cashLimit} onChange={handleUpdateInputChange}
+                  step="0.01" min="0"
+                  className={updateErrors.cashLimit ? 'input-error' : ''}
+                />
+                {updateErrors.cashLimit && <div className="error">{updateErrors.cashLimit}</div>}
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn btn-ghost" onClick={closeUpdateModal}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={updateSubmitting}>
+                  {updateSubmitting ? 'Updating...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -139,7 +139,7 @@ function RequestsPage() {
               <option value="">Select a card</option>
               {cards.map((card) => (
                 <option key={card.encryptedCardNumber} value={card.encryptedCardNumber}>
-                  {card.maskedCardNumber || maskCardNumber(card.cardNumber)} — {getCardStatusText(card.cardStatus)}
+                  {(card.maskedCardNumber || maskCardNumber(card.cardNumber))?.replaceAll('X', '*')} — {getCardStatusText(card.cardStatus)}
                 </option>
               ))}
             </select>
@@ -195,7 +195,11 @@ function RequestsPage() {
                 {requests.map((request) => (
                   <tr key={request.requestId}>
                     <td>#{request.requestId}</td>
-                    <td><code>{request.maskedCardNumber || maskCardNumber(request.cardNumber)}</code></td>
+                    <td>
+                      <code>
+                        {(request.maskedCardNumber || maskCardNumber(request.cardNumber))?.replaceAll('X', '*')}
+                      </code>
+                    </td>
                     <td>{getRequestTypeText(request.requestReasonCode)}</td>
                     <td>{request.cardStatusDescription || getCardStatusText(request.cardStatus)}</td>
                     <td>

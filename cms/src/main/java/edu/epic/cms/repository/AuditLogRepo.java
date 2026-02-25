@@ -10,4 +10,7 @@ public interface AuditLogRepo {
     AuditLog save(AuditLog log);
 
     List<AuditLog> findAll();
+
+    List<AuditLog> findAllFiltered(String performUser, String activityType, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate);
 }

@@ -8,19 +8,25 @@ import java.io.IOException;
  */
 public interface ReportService {
 
-    byte[] generateCardsPdf() throws IOException;
+    byte[] generateCardsPdf(String status, java.time.LocalDate fromDate, java.time.LocalDate toDate) throws IOException;
 
-    byte[] generateCardsCsv() throws IOException;
+    byte[] generateCardsCsv(String status, java.time.LocalDate fromDate, java.time.LocalDate toDate) throws IOException;
 
-    byte[] generateCardRequestsPdf() throws IOException;
+    byte[] generateCardRequestsPdf(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException;
 
-    byte[] generateCardRequestsCsv() throws IOException;
+    byte[] generateCardRequestsCsv(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException;
 
-    byte[] generateApprovalsPdf() throws IOException;
+    byte[] generateApprovalsPdf(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException;
 
-    byte[] generateApprovalsCsv() throws IOException;
+    byte[] generateApprovalsCsv(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException;
 
-    byte[] generateAuditPdf() throws IOException;
+    byte[] generateAuditPdf(String performUser, String activityType, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException;
 
-    byte[] generateAuditCsv() throws IOException;
+    byte[] generateAuditCsv(String performUser, String activityType, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException;
 }

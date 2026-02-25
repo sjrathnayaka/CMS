@@ -46,8 +46,9 @@ public class ReportServiceImpl implements ReportService {
     // ─────────────────────────── CARDS ───────────────────────────
 
     @Override
-    public byte[] generateCardsPdf() throws IOException {
-        List<Card> cards = cardService.getAllCards();
+    public byte[] generateCardsPdf(String status, java.time.LocalDate fromDate, java.time.LocalDate toDate)
+            throws IOException {
+        List<Card> cards = cardService.getAllCardsFiltered(status, fromDate, toDate);
 
         String[] headers = {
                 "Masked Card No.", "Expiry Date", "Status",
@@ -86,8 +87,9 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public byte[] generateCardsCsv() throws IOException {
-        List<Card> cards = cardService.getAllCards();
+    public byte[] generateCardsCsv(String status, java.time.LocalDate fromDate, java.time.LocalDate toDate)
+            throws IOException {
+        List<Card> cards = cardService.getAllCardsFiltered(status, fromDate, toDate);
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 CSVWriter csv = new CSVWriter(new OutputStreamWriter(bos, StandardCharsets.UTF_8))) {
@@ -120,8 +122,10 @@ public class ReportServiceImpl implements ReportService {
     // ─────────────────────────── CARD REQUESTS ───────────────────────────
 
     @Override
-    public byte[] generateCardRequestsPdf() throws IOException {
-        List<DetailedCardRequestResponse> requests = cardRequestService.getAllRequestsWithDetails();
+    public byte[] generateCardRequestsPdf(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException {
+        List<DetailedCardRequestResponse> requests = cardRequestService.getAllRequestsWithDetailsFiltered(statusCode,
+                typeCode, fromDate, toDate);
 
         String[] headers = {
                 "Request ID", "Masked Card No.", "Reason", "Status",
@@ -156,8 +160,10 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public byte[] generateCardRequestsCsv() throws IOException {
-        List<DetailedCardRequestResponse> requests = cardRequestService.getAllRequestsWithDetails();
+    public byte[] generateCardRequestsCsv(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException {
+        List<DetailedCardRequestResponse> requests = cardRequestService.getAllRequestsWithDetailsFiltered(statusCode,
+                typeCode, fromDate, toDate);
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 CSVWriter csv = new CSVWriter(new OutputStreamWriter(bos, StandardCharsets.UTF_8))) {
@@ -186,8 +192,9 @@ public class ReportServiceImpl implements ReportService {
     // ─────────────────────────── APPROVALS ───────────────────────────
 
     @Override
-    public byte[] generateApprovalsPdf() throws IOException {
-        List<DetailedCardRequestResponse> approvals = getApprovals();
+    public byte[] generateApprovalsPdf(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException {
+        List<DetailedCardRequestResponse> approvals = getApprovals(statusCode, typeCode, fromDate, toDate);
 
         String[] headers = {
                 "Request ID", "Masked Card No.", "Reason", "Status",
@@ -223,8 +230,9 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public byte[] generateApprovalsCsv() throws IOException {
-        List<DetailedCardRequestResponse> approvals = getApprovals();
+    public byte[] generateApprovalsCsv(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException {
+        List<DetailedCardRequestResponse> approvals = getApprovals(statusCode, typeCode, fromDate, toDate);
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 CSVWriter csv = new CSVWriter(new OutputStreamWriter(bos, StandardCharsets.UTF_8))) {
@@ -253,8 +261,16 @@ public class ReportServiceImpl implements ReportService {
 
     // ─────────────────────────── HELPERS ───────────────────────────
 
-    private List<DetailedCardRequestResponse> getApprovals() {
-        return cardRequestService.getAllRequestsWithDetails().stream()
+    private List<DetailedCardRequestResponse> getApprovals(String statusCode, String typeCode,
+            java.time.LocalDateTime fromDate, java.time.LocalDateTime toDate) {
+        // If statusCode is null, we filter for BOTH APPR and RJCT (historical
+        // approvals)
+        // If statusCode is provided (e.g. from frontend), we use it.
+        if (statusCode != null && !statusCode.isEmpty()) {
+            return cardRequestService.getAllRequestsWithDetailsFiltered(statusCode, typeCode, fromDate, toDate);
+        }
+
+        return cardRequestService.getAllRequestsWithDetailsFiltered(null, typeCode, fromDate, toDate).stream()
                 .filter(r -> "APPR".equals(r.getRequestStatusCode()) || "RJCT".equals(r.getRequestStatusCode()))
                 .toList();
     }
@@ -289,8 +305,9 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public byte[] generateAuditPdf() throws IOException {
-        List<AuditLog> logs = auditLogRepo.findAll();
+    public byte[] generateAuditPdf(String performUser, String activityType, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException {
+        List<AuditLog> logs = auditLogRepo.findAllFiltered(performUser, activityType, fromDate, toDate);
 
         String[] headers = {
                 "Log ID", "Activity Type", "Description", "Performed By", "Timestamp"
@@ -322,8 +339,9 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public byte[] generateAuditCsv() throws IOException {
-        List<AuditLog> logs = auditLogRepo.findAll();
+    public byte[] generateAuditCsv(String performUser, String activityType, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) throws IOException {
+        List<AuditLog> logs = auditLogRepo.findAllFiltered(performUser, activityType, fromDate, toDate);
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 OutputStreamWriter osw = new OutputStreamWriter(bos, StandardCharsets.UTF_8);

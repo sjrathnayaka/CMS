@@ -84,4 +84,31 @@ public class CardRequestRepoImpl implements CardRequestRepo {
         String sql = "UPDATE CardRequest SET RequestStatusCode = ?, ApprovedUser = ? WHERE RequestId = ?";
         return jdbcTemplate.update(sql, statusCode, approvedUser, requestId);
     }
+
+    @Override
+    public List<CardRequest> findAllFiltered(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM CardRequest WHERE 1=1");
+        java.util.List<Object> args = new java.util.ArrayList<>();
+
+        if (statusCode != null && !statusCode.isEmpty()) {
+            sql.append(" AND RequestStatusCode = ?");
+            args.add(statusCode);
+        }
+        if (typeCode != null && !typeCode.isEmpty()) {
+            sql.append(" AND RequestReasonCode = ?");
+            args.add(typeCode);
+        }
+        if (fromDate != null) {
+            sql.append(" AND CreatedTime >= ?");
+            args.add(Timestamp.valueOf(fromDate));
+        }
+        if (toDate != null) {
+            sql.append(" AND CreatedTime <= ?");
+            args.add(Timestamp.valueOf(toDate));
+        }
+
+        sql.append(" ORDER BY CreatedTime DESC");
+        return jdbcTemplate.query(sql.toString(), rowMapper, args.toArray());
+    }
 }

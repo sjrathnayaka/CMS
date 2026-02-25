@@ -49,6 +49,9 @@ public interface CardRequestService {
      */
     List<DetailedCardRequestResponse> getAllRequestsWithDetails();
 
+    List<DetailedCardRequestResponse> getAllRequestsWithDetailsFiltered(String statusCode, String typeCode,
+            java.time.LocalDateTime fromDate, java.time.LocalDateTime toDate);
+
     /**
      * Get all requests for a specific card with detailed information.
      * 

@@ -143,6 +143,15 @@ public class CardRequestServiceImpl implements CardRequestService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<DetailedCardRequestResponse> getAllRequestsWithDetailsFiltered(String statusCode, String typeCode,
+            java.time.LocalDateTime fromDate, java.time.LocalDateTime toDate) {
+        List<CardRequest> requests = cardRequestRepo.findAllFiltered(statusCode, typeCode, fromDate, toDate);
+        return requests.stream()
+                .map(this::buildDetailedResponse)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Builds a detailed response with complete card and request information.
      */

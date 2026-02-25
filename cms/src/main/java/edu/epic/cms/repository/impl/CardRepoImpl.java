@@ -95,6 +95,28 @@ public class CardRepoImpl implements CardRepo {
     }
 
     @Override
+    public List<Card> findAllFiltered(String status, java.time.LocalDate fromDate, java.time.LocalDate toDate) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM Card WHERE 1=1");
+        java.util.List<Object> args = new java.util.ArrayList<>();
+
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND CardStatus = ?");
+            args.add(status);
+        }
+        if (fromDate != null) {
+            sql.append(" AND ExpiryDate >= ?");
+            args.add(java.sql.Date.valueOf(fromDate));
+        }
+        if (toDate != null) {
+            sql.append(" AND ExpiryDate <= ?");
+            args.add(java.sql.Date.valueOf(toDate));
+        }
+
+        sql.append(" ORDER BY LastUpdateTime DESC");
+        return jdbcTemplate.query(sql.toString(), cardRowMapper, args.toArray());
+    }
+
+    @Override
     public int deleteById(Long id) {
         // Since CardNumber is the primary key, this method is not applicable
         throw new UnsupportedOperationException("Use deleteByCardNumber instead - CardNumber is the primary key");

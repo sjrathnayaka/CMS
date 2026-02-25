@@ -34,4 +34,7 @@ public interface CardRequestRepo {
      * Update request status and optionally set the approving/rejecting user.
      */
     int updateStatus(Long requestId, String statusCode, String approvedUser);
+
+    List<CardRequest> findAllFiltered(String statusCode, String typeCode, java.time.LocalDateTime fromDate,
+            java.time.LocalDateTime toDate);
 }

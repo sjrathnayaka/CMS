@@ -172,7 +172,11 @@ function ApproveRejectPage() {
                 {filteredRequests.map((request) => (
                   <tr key={request.requestId}>
                     <td>#{request.requestId}</td>
-                    <td><code>{request.maskedCardNumber}</code></td>
+                    <td>
+                      <code>
+                        {request.maskedCardNumber?.replaceAll('X', '*')}
+                      </code>
+                    </td>
                     <td>
                       <span className={`request-type-badge ${request.requestReasonCode === 'ACTI' ? 'type-activation' : 'type-deactivation'}`}>
                         {getRequestTypeText(request.requestReasonCode)}

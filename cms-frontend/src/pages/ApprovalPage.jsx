@@ -108,7 +108,7 @@ function ApprovalPage() {
 
   const maskCardNumber = (cardNumber) => {
     if (!cardNumber || cardNumber.length < 4) return cardNumber
-    return 'XXXX-XXXX-XXXX-' + cardNumber.slice(-4)
+    return '****-****-****-' + cardNumber.slice(-4)
   }
 
   const filteredRequests = requests.filter((request) => {
@@ -127,13 +127,13 @@ function ApprovalPage() {
     <div>
       <div className="card">
         <h2>✅ Request Approval Management</h2>
-        
+
         {success && <div className="alert alert-success">{success}</div>}
         {error && <div className="alert alert-error">{error}</div>}
-        
+
         <div className="alert alert-info">
-          <strong>Note:</strong> This page displays all card requests with their current status. 
-          In your backend system, requests are automatically approved/rejected based on business rules 
+          <strong>Note:</strong> This page displays all card requests with their current status.
+          In your backend system, requests are automatically approved/rejected based on business rules
           (e.g., deactivation only for active cards with no balance).
         </div>
 
@@ -171,7 +171,7 @@ function ApprovalPage() {
 
       <div className="card">
         <h2>📋 Request Details</h2>
-        
+
         {loading ? (
           <div className="loading">Loading requests...</div>
         ) : filteredRequests.length === 0 ? (
@@ -201,7 +201,11 @@ function ApprovalPage() {
                 {filteredRequests.map((request) => (
                   <tr key={request.requestId}>
                     <td>#{request.requestId}</td>
-                    <td>{request.maskedCardNumber || maskCardNumber(request.cardNumber)}</td>
+                    <td>
+                      <code>
+                        {(request.maskedCardNumber || maskCardNumber(request.cardNumber))?.replaceAll('X', '*')}
+                      </code>
+                    </td>
                     <td>
                       <strong>{getRequestTypeText(request.requestReasonCode)}</strong>
                     </td>

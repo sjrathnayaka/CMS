@@ -25,8 +25,12 @@ public class ReportController {
     // ─────────────────────────── CARDS ───────────────────────────
 
     @GetMapping("/cards/pdf")
-    public ResponseEntity<byte[]> downloadCardsPdf() throws IOException {
-        byte[] data = reportService.generateCardsPdf();
+    public ResponseEntity<byte[]> downloadCardsPdf(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String status,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fromDate,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate toDate)
+            throws IOException {
+        byte[] data = reportService.generateCardsPdf(status, fromDate, toDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"cards_report.pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
@@ -34,8 +38,12 @@ public class ReportController {
     }
 
     @GetMapping("/cards/csv")
-    public ResponseEntity<byte[]> downloadCardsCsv() throws IOException {
-        byte[] data = reportService.generateCardsCsv();
+    public ResponseEntity<byte[]> downloadCardsCsv(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String status,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fromDate,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate toDate)
+            throws IOException {
+        byte[] data = reportService.generateCardsCsv(status, fromDate, toDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"cards_report.csv\"")
                 .contentType(MediaType.parseMediaType("text/csv"))
@@ -45,8 +53,13 @@ public class ReportController {
     // ─────────────────────────── CARD REQUESTS ───────────────────────────
 
     @GetMapping("/card-requests/pdf")
-    public ResponseEntity<byte[]> downloadCardRequestsPdf() throws IOException {
-        byte[] data = reportService.generateCardRequestsPdf();
+    public ResponseEntity<byte[]> downloadCardRequestsPdf(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String statusCode,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String typeCode,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fromDate,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime toDate)
+            throws IOException {
+        byte[] data = reportService.generateCardRequestsPdf(statusCode, typeCode, fromDate, toDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"card_requests_report.pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
@@ -54,8 +67,13 @@ public class ReportController {
     }
 
     @GetMapping("/card-requests/csv")
-    public ResponseEntity<byte[]> downloadCardRequestsCsv() throws IOException {
-        byte[] data = reportService.generateCardRequestsCsv();
+    public ResponseEntity<byte[]> downloadCardRequestsCsv(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String statusCode,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String typeCode,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fromDate,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime toDate)
+            throws IOException {
+        byte[] data = reportService.generateCardRequestsCsv(statusCode, typeCode, fromDate, toDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"card_requests_report.csv\"")
                 .contentType(MediaType.parseMediaType("text/csv"))
@@ -65,8 +83,13 @@ public class ReportController {
     // ─────────────────────────── APPROVALS ───────────────────────────
 
     @GetMapping("/approvals/pdf")
-    public ResponseEntity<byte[]> downloadApprovalsPdf() throws IOException {
-        byte[] data = reportService.generateApprovalsPdf();
+    public ResponseEntity<byte[]> downloadApprovalsPdf(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String statusCode,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String typeCode,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fromDate,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime toDate)
+            throws IOException {
+        byte[] data = reportService.generateApprovalsPdf(statusCode, typeCode, fromDate, toDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"approvals_report.pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
@@ -74,17 +97,29 @@ public class ReportController {
     }
 
     @GetMapping("/approvals/csv")
-    public ResponseEntity<byte[]> downloadApprovalsCsv() throws IOException {
-        byte[] data = reportService.generateApprovalsCsv();
+    public ResponseEntity<byte[]> downloadApprovalsCsv(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String statusCode,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String typeCode,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fromDate,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime toDate)
+            throws IOException {
+        byte[] data = reportService.generateApprovalsCsv(statusCode, typeCode, fromDate, toDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"approvals_report.csv\"")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(data);
     }
 
+    // ─────────────────────────── AUDIT ───────────────────────────
+
     @GetMapping("/audit/pdf")
-    public ResponseEntity<byte[]> downloadAuditPdf() throws IOException {
-        byte[] data = reportService.generateAuditPdf();
+    public ResponseEntity<byte[]> downloadAuditPdf(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String performUser,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String activityType,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fromDate,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime toDate)
+            throws IOException {
+        byte[] data = reportService.generateAuditPdf(performUser, activityType, fromDate, toDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"audit_report.pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
@@ -92,8 +127,13 @@ public class ReportController {
     }
 
     @GetMapping("/audit/csv")
-    public ResponseEntity<byte[]> downloadAuditCsv() throws IOException {
-        byte[] data = reportService.generateAuditCsv();
+    public ResponseEntity<byte[]> downloadAuditCsv(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String performUser,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String activityType,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fromDate,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime toDate)
+            throws IOException {
+        byte[] data = reportService.generateAuditCsv(performUser, activityType, fromDate, toDate);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"audit_report.csv\"")
                 .contentType(MediaType.parseMediaType("text/csv"))

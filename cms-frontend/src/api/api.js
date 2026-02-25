@@ -63,22 +63,22 @@ export const encryptionApi = {
 
 // Reports API
 export const reportsApi = {
-  downloadCardsPdf: () =>
-    api.get('/reports/cards/pdf', { responseType: 'arraybuffer' }),
-  downloadCardsCsv: () =>
-    api.get('/reports/cards/csv', { responseType: 'arraybuffer' }),
-  downloadCardRequestsPdf: () =>
-    api.get('/reports/card-requests/pdf', { responseType: 'arraybuffer' }),
-  downloadCardRequestsCsv: () =>
-    api.get('/reports/card-requests/csv', { responseType: 'arraybuffer' }),
-  downloadApprovalsPdf: () =>
-    api.get('/reports/approvals/pdf', { responseType: 'arraybuffer' }),
-  downloadApprovalsCsv: () =>
-    api.get('/reports/approvals/csv', { responseType: 'arraybuffer' }),
-  downloadAuditPdf: () =>
-    api.get('/reports/audit/pdf', { responseType: 'arraybuffer' }),
-  downloadAuditCsv: () =>
-    api.get('/reports/audit/csv', { responseType: 'arraybuffer' }),
+  downloadCardsPdf: (params) =>
+    api.get('/reports/cards/pdf', { params, responseType: 'arraybuffer' }),
+  downloadCardsCsv: (params) =>
+    api.get('/reports/cards/csv', { params, responseType: 'arraybuffer' }),
+  downloadCardRequestsPdf: (params) =>
+    api.get('/reports/card-requests/pdf', { params, responseType: 'arraybuffer' }),
+  downloadCardRequestsCsv: (params) =>
+    api.get('/reports/card-requests/csv', { params, responseType: 'arraybuffer' }),
+  downloadApprovalsPdf: (params) =>
+    api.get('/reports/approvals/pdf', { params, responseType: 'arraybuffer' }),
+  downloadApprovalsCsv: (params) =>
+    api.get('/reports/approvals/csv', { params, responseType: 'arraybuffer' }),
+  downloadAuditPdf: (params) =>
+    api.get('/reports/audit/pdf', { params, responseType: 'arraybuffer' }),
+  downloadAuditCsv: (params) =>
+    api.get('/reports/audit/csv', { params, responseType: 'arraybuffer' }),
 }
 
 export default api

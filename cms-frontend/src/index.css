@@ -828,6 +828,90 @@ code {
   }
 }
 
+/* ── Report Filters ─────────────────────────── */
+.report-filters {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-group-horizontal {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filter-item label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.filter-item input,
+.filter-item select {
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  outline: none;
+  color: var(--text-primary);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filter-item input:focus,
+.filter-item select:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.1);
+}
+
+.filter-item input::placeholder {
+  color: var(--text-muted);
+}
+
+.report-card-body .btn-report-pdf,
+.report-card-body .btn-report-csv {
+  flex: 1;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .report-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .filter-group-horizontal {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .filter-item {
+    width: 100%;
+  }
+
+  .report-actions {
+    width: 100%;
+  }
+}
+
 /* ── Month Picker ───────────────────────────── */
 .month-picker-container {
   position: relative;
